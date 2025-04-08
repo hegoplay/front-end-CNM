@@ -1,0 +1,43 @@
+.chat-app {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: white;
+  /* font-family: 'Roboto', sans-serif; */
+}
+
+/* Thanh điều hướng bên trái */
+.sidebar {
+  width: 6rem;
+  border-right: 1px solid #e8e8e8;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 8px;
+}
+
+.nav-button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #333;
+  transition: background 0.2s;
+}
+
+.nav-button:hover {
+  background: #e6f7ff;
+}
+
+/* Khu vực chính */
+.main-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder {
+  color: #888;
+  font-size: 16px;
+}
