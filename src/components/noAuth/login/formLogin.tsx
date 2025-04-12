@@ -6,6 +6,7 @@ import { useActionState, useLayoutEffect } from "react";
 import { loginAction } from "@/app/login/actions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/context/UserContext";
 
 interface LoginState {
   error?: string;
@@ -16,13 +17,15 @@ interface LoginState {
 const FormLogin: React.FC = () => {
   const [state, formAction, isPending] = useActionState(loginAction, null);
   const router = useRouter();
+  const { login } = useUser();
 
   useLayoutEffect(() => {
     if (state?.success) {
       const timer = setTimeout(() => {
-        router.push("/"); // Redirect về trang chủ
+        router.push(state.redirectUrl || "/"); // Redirect về trang chủ
       }, 1000); // Delay 1 giây (1000ms)
-
+      login();
+      // useUser().setPhoneNumber(state.phoneNumber); // Lưu số điện thoại vào context
       return () => clearTimeout(timer); // Cleanup timeout khi component unmount
     }
   }, [state, router]);

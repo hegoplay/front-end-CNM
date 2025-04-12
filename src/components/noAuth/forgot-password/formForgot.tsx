@@ -12,7 +12,7 @@ import UpdatePassword from "./updatePassword";
 const FormForgot = () => {
   const [phone, setPhone] = useState("+9999999999");
   const [otp, setOtp] = useState("");
-  const [step, setStep] = useState(3);
+  const [step, setStep] = useState(1);
   const [wrongOTP, setWrongOTP] = useState(false);
 
   const restartFn = () => {

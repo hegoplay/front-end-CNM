@@ -1,6 +1,6 @@
-import FormForgot from '@/components/forgot-password/formForgot'
-import FormLogin from '@/components/login/formLogin'
-import LoginBox from '@/components/login/loginBox'
+import FormForgot from '@/components/noAuth/forgot-password/formForgot'
+import FormLogin from '@/components/noAuth/login/formLogin'
+import LoginBox from '@/components/noAuth/login/loginBox'
 import React from 'react'
 
 const ForgotPasswordPage = () => {

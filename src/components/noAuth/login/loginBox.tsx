@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Input } from "antd";
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import FormLogin from "./formLogin";
+import BoxWrapper from "../../BoxWrapper";
 
 interface LoginBoxProps {
   renderForm?:React.ReactNode;  // Thêm optional và đổi React.ReactNode
@@ -14,7 +15,7 @@ const LoginBox: React.FC<LoginBoxProps> = ({renderForm, title}) => {
 
 
   return (
-    <div className="bg-white rounded-2xl w-120 h-120 shadow-2xl flex flex-col">
+    <BoxWrapper>
       <p className="text-black text-center py-5 border-b font-bold border-black border-solid ">
         {title}
       </p>
@@ -24,7 +25,7 @@ const LoginBox: React.FC<LoginBoxProps> = ({renderForm, title}) => {
           {renderForm}
         </div>
       </div>
-    </div>
+    </BoxWrapper>
   );
 };
 

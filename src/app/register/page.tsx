@@ -1,5 +1,5 @@
-import FormRegister from '@/components/register/formRegister'
-import LoginBox from '@/components/login/loginBox'
+import FormRegister from '@/components/noAuth/register/formRegister'
+import LoginBox from '@/components/noAuth/login/loginBox'
 import React from 'react'
 
 const RegisterPage = () => {

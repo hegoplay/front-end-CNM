@@ -1,6 +1,6 @@
 import React from 'react'
-import LoginBox from '@/components/login/loginBox'
-import FormLogin from '@/components/login/formLogin'
+import LoginBox from '@/components/noAuth/login/loginBox'
+import FormLogin from '@/components/noAuth/login/formLogin'
 
 const LoginPage = () => {
   return (

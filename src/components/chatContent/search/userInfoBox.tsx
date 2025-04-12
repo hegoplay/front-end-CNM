@@ -1,17 +1,9 @@
+import UserInfoProps from "@/models/UserInfoProps";
 import { Button } from "antd";
 import React from "react";
 
-interface UserInfoBoxProps {
-  backgroundImg?: string;
-  baseImg?: string;
-  bio?: string;
-  dateOfBirth?: string;
-  gender?: boolean;
-  name?: string;
-  phoneNumber?: string;
-}
 
-const UserInfoBox: React.FC<UserInfoBoxProps> = ({ ...props }) => {
+const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
   return (
     <div className="h-150 flex flex-col ">
       <img
@@ -26,7 +18,8 @@ const UserInfoBox: React.FC<UserInfoBoxProps> = ({ ...props }) => {
           />
           <h3 className="text-black font-semibold max-w-[60%]">{props.name}</h3>
           <Button type="primary">Chat</Button>
-          <Button type="text">Kết bạn</Button>
+          {/* Nếu chưa phải là bạn thì sẽ kết bạn */}
+          { <Button type="text">Kết bạn</Button> }
         </div>
         <div className="flex gap-2">
           <span className="text-sm text-gray-500">Giới thiệu</span>
@@ -34,7 +27,7 @@ const UserInfoBox: React.FC<UserInfoBoxProps> = ({ ...props }) => {
         </div>
         <div className="flex gap-2">
           <span className="text-sm text-gray-500">Giới tính</span>
-          <p className="text-sm">{props.gender ? "Nam" : "Nữ"}</p>
+          <p className="text-sm">{props.isMale ? "Nam" : "Nữ"}</p>
         </div>
         <div className="flex gap-2">
           <span className="text-sm text-gray-500">Ngày sinh </span>

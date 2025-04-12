@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation';
 interface LoginState {
   error?: string;
   success?: boolean;
-  message?: string;
+  phoneNumber?: string;
+  redirectUrl?: string;
 }
 
 export async function loginAction(prevState: LoginState | null, formData: FormData) {
@@ -46,7 +47,8 @@ export async function loginAction(prevState: LoginState | null, formData: FormDa
 
     return { 
       success: true,
-      redirectUrl: '/'
+      redirectUrl: '/',
+      phoneNumber: data.phone,
     };
   } catch (error) {
     return { 
