@@ -14,12 +14,18 @@ import {
 type AckResponse = 'JOIN_SUCCESS' | 'ACCESS_DENIED' | 'SENT' | 'RECALLED' | 'REACTED';
 
 interface SocketState {
+  // kiểm tra đã kết nối được chưa
   isConnected: boolean;
+  // lưu danh sách hội thoại
   conversations: ConversationDto[];
+  // currentConversation là hội thoại hiện tại
+  // currentConversation?.messageDetails là các message đã coi của hội thoại hiện tại 
   currentConversation?: ConversationDetailDto;
+  // messages lưu các message chưa coi của tất cả hội thoại để hiện thông báo người dùng chưa đọc
   messages: MessageResponse[];
 }
 
+// cái này không dùng
 interface SocketActions {
   joinConversation: (conversationId: string) => Promise<boolean>;
   sendTextMessage: (content: string) => Promise<boolean>;
