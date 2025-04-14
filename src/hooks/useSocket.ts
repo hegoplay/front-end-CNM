@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Manager, Socket } from 'socket.io-client';
 type ManagerType = ReturnType<typeof Manager>;
 type SocketType = ReturnType<ManagerType['socket']>;
@@ -8,29 +8,26 @@ import {
   MessageResponse,
   ConversationDetailDto,
   MessageRequest,
-  MessageType
+  MessageType,
+  Reaction
 } from '../types/chat';
 
 type AckResponse = 'JOIN_SUCCESS' | 'ACCESS_DENIED' | 'SENT' | 'RECALLED' | 'REACTED';
 
 interface SocketState {
-  // kiểm tra đã kết nối được chưa
   isConnected: boolean;
-  // lưu danh sách hội thoại
   conversations: ConversationDto[];
-  // currentConversation là hội thoại hiện tại
-  // currentConversation?.messageDetails là các message đã coi của hội thoại hiện tại 
   currentConversation?: ConversationDetailDto;
-  // messages lưu các message chưa coi của tất cả hội thoại để hiện thông báo người dùng chưa đọc
   messages: MessageResponse[];
+  unreadCounts: { [conversationId: string]: number };
 }
 
-// cái này không dùng
 interface SocketActions {
   joinConversation: (conversationId: string) => Promise<boolean>;
   sendTextMessage: (content: string) => Promise<boolean>;
   recallMessage: (messageId: string) => Promise<boolean>;
   reactToMessage: (messageId: string, emoji: string) => Promise<boolean>;
+  getConversationsWithUnreadCounts: () => { conversationId: string; unreadCount: number }[];
 }
 
 const useSocket = (url: string, token: string) => {
@@ -39,11 +36,21 @@ const useSocket = (url: string, token: string) => {
   const [state, setState] = useState<SocketState>({
     isConnected: false,
     conversations: [],
-    messages: []
+    messages: [],
+    unreadCounts: {},
   });
 
-  // Initialize socket connection
+  // Ref để theo dõi component có unmount hay không
+  const isMounted = useRef(true);
+
+  // Khởi tạo socket connection
   useEffect(() => {
+    // Kiểm tra giá trị url và token
+    if (!url || !token) {
+      console.error('Invalid url or token:', { url, token });
+      return;
+    }
+
     const newManager = new Manager(url, {
       reconnectionAttempts: 3,
       reconnectionDelay: 1000,
@@ -53,7 +60,7 @@ const useSocket = (url: string, token: string) => {
       auth: { token }
     });
 
-    const socketInstance = newManager.socket('/chat'); // Connect to main namespace
+    const socketInstance = newManager.socket('/chat');
 
     const onConnect = () => {
       setState(prev => ({ ...prev, isConnected: true }));
@@ -62,6 +69,7 @@ const useSocket = (url: string, token: string) => {
 
     const onDisconnect = () => {
       setState(prev => ({ ...prev, isConnected: false }));
+      console.log('Socket disconnected');
     };
 
     const onError = (error: Error) => {
@@ -86,7 +94,11 @@ const useSocket = (url: string, token: string) => {
         if (prev.currentConversation?.id !== message.conversationId) {
           return {
             ...prev,
-            messages: [...prev.messages, message]
+            messages: [...prev.messages, message],
+            unreadCounts: {
+              ...prev.unreadCounts,
+              [message.conversationId]: (prev.unreadCounts[message.conversationId] || 0) + 1
+            }
           };
         }
         return {
@@ -100,7 +112,7 @@ const useSocket = (url: string, token: string) => {
       });
     };
 
-    const onMessageRecalled = (data: {messageId: string,conversationId: string }) => {
+    const onMessageRecalled = (data: { messageId: string, conversationId: string }) => {
       console.log('Message recalled:', data);
       setState(prev => ({
         ...prev,
@@ -122,28 +134,91 @@ const useSocket = (url: string, token: string) => {
       messageId: string;
       emoji: string;
       userId: string;
+      conversationId: string;
     }) => {
-      setState(prev => ({
+      console.log('Reaction added:', data);
+      setState((prev) => ({
         ...prev,
-        messages: prev.messages.map(msg => {
+        messages: prev.messages.map((msg) => {
           if (msg.id !== data.messageId) return msg;
+    
+          const existingReaction = msg.reactions?.find((r) => r.emoji === data.emoji);
+          let newReactions: Reaction[];
+          if (existingReaction) {
+            if (existingReaction.users.includes(data.userId)) {
+              return msg;
+            }
+            newReactions = msg.reactions!.map((r) =>
+              r.emoji === data.emoji
+                ? { ...r, users: [...r.users, data.userId] }
+                : r
+            );
+          } else {
+            newReactions = [
+              ...(msg.reactions || []),
+              { emoji: data.emoji, users: [data.userId] },
+            ];
+          }
           
-          const existingReaction = msg.reactions?.find(r => r.emoji === data.emoji);
-          const newReactions = existingReaction
-            ? msg.reactions?.map(r => 
-                r.emoji === data.emoji 
-                  ? { ...r, users: [...r.users, data.userId] }
-                  : r
-              )
-            : [...(msg.reactions || []), { emoji: data.emoji, users: [data.userId] }];
-            
           return {
             ...msg,
-            reactions: newReactions
+            reactions: newReactions,
           };
-        })
+        }),
+        currentConversation: prev.currentConversation?.id === data.conversationId
+          ? {
+              ...prev.currentConversation,
+              messageDetails: prev.currentConversation.messageDetails.map((msg) => {
+                if (msg.id !== data.messageId) return msg;
+                
+                const existingReaction = msg.reactions?.find(
+                  (r) => r.emoji === data.emoji
+                );
+                let newReactions: Reaction[];
+                if (existingReaction) {
+                  newReactions = msg.reactions!.map((r) =>
+                    r.emoji === data.emoji
+                      ? { ...r, users: [...r.users, data.userId] }
+                      : r
+                  );
+                } else {
+                  newReactions = [
+                    ...(msg.reactions || []),
+                    { emoji: data.emoji, users: [data.userId] },
+                  ];
+                }
+    
+                return {
+                  ...msg,
+                  reactions: newReactions,
+                };
+              }),
+            }
+          : prev.currentConversation,
       }));
     };
+
+    const onUnreadCounts = (unreadCounts: { [conversationId: string]: number }) => {
+      // console.log('Received unread counts:', unreadCounts);
+      setState(prev => ({
+        ...prev,
+        unreadCounts
+      }));
+    };
+
+    const onReadConversation = (data: {conversationId: string, userId: string}) => {
+      const { conversationId } = data;
+      console.log('Received read_conversation event:', data);
+
+      // Cập nhật unreadCounts: đặt conversationId về 0
+      setState(prev => ({
+          ...prev,
+          unreadCounts: {
+              ...prev.unreadCounts,
+              [conversationId]: 0
+          }
+      }));
+  };
 
     socketInstance.on('connect', onConnect);
     socketInstance.on('disconnect', onDisconnect);
@@ -151,26 +226,41 @@ const useSocket = (url: string, token: string) => {
     socketInstance.on('initial_conversations', onInitialConversations);
     socketInstance.on('initial_messages', onInitialMessages);
     socketInstance.on('new_message', onNewMessage);
-    // thu hồi tin nhắn
     socketInstance.on('message_recalled', onMessageRecalled);
     socketInstance.on('reaction_added', onReactionAdded);
+    socketInstance.on('unread_counts', onUnreadCounts);
+    socketInstance.on('read_conversation', onReadConversation);
 
     setManager(newManager);
     setSocket(socketInstance);
 
+    // Cleanup chỉ khi component unmount
     return () => {
-      socketInstance.off('connect', onConnect);
-      socketInstance.off('disconnect', onDisconnect);
-      socketInstance.off('error', onError);
-      socketInstance.off('initial_conversations', onInitialConversations);
-      socketInstance.off('initial_messages', onInitialMessages);
-      socketInstance.off('new_message', onNewMessage);
-      socketInstance.off('message_recalled', onMessageRecalled);
-      socketInstance.off('reaction_added', onReactionAdded);
-      socketInstance.disconnect();
-      newManager.removeAllListeners();
+      isMounted.current = false;
     };
   }, [url, token]);
+
+  // Cleanup socket khi component unmount
+  useEffect(() => {
+    return () => {
+      if (socket) {
+        socket.off('connect');
+        socket.off('disconnect');
+        socket.off('error');
+        socket.off('initial_conversations');
+        socket.off('initial_messages');
+        socket.off('new_message');
+        socket.off('message_recalled');
+        socket.off('reaction_added');
+        socket.off('unread_counts');
+        socket.off('read_conversation');
+        socket.disconnect();
+      }
+      if (manager) {
+        manager.removeAllListeners();
+      }
+    };
+  }, [socket, manager]); // Dependency là socket và manager, không chạy lại trừ khi socket/manager thay đổi
 
   const joinConversation = useCallback(async (conversationId: string) => {
     if (!socket) return false;
@@ -189,7 +279,7 @@ const useSocket = (url: string, token: string) => {
       conversationId: state.currentConversation.id,
       content,
       type: MessageType.TEXT,
-      senderId: '' // Will be set by server from token
+      senderId: ''
     };
 
     return new Promise<boolean>((resolve) => {
@@ -219,12 +309,20 @@ const useSocket = (url: string, token: string) => {
     });
   }, [socket]);
 
+  const getConversationsWithUnreadCounts = useCallback(() => {
+    return Object.entries(state.unreadCounts).map(([conversationId, unreadCount]) => ({
+      conversationId,
+      unreadCount
+    }));
+  }, [state.unreadCounts]);
+
   const actions: SocketActions = useMemo(() => ({
     joinConversation,
     sendTextMessage,
     recallMessage,
-    reactToMessage
-  }), [joinConversation, sendTextMessage, recallMessage, reactToMessage]);
+    reactToMessage,
+    getConversationsWithUnreadCounts
+  }), [joinConversation, sendTextMessage, recallMessage, reactToMessage, getConversationsWithUnreadCounts]);
 
   return { ...state, ...actions, socket };
 };

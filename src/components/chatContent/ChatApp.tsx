@@ -1,72 +1,77 @@
 "use client";
-import React, { Suspense, useState } from "react";
-import { Button, Flex, Input, Modal, Spin } from "antd";
-import {
-  UserOutlined,
-  TeamOutlined,
-  SettingOutlined,
-  MessageOutlined,
-  PhoneOutlined,
-  MessageFilled,
-  SettingFilled,
-} from "@ant-design/icons";
+import React, { Suspense, useState, useEffect } from "react";
+import { Spin } from "antd";
 import "./ChatApp.css";
-import IconButton from "@/components/IconButton";
-import { FaMagnifyingGlass } from "react-icons/fa6";
-import { IoPersonAddOutline, IoPeopleOutline } from "react-icons/io5";
-import UserBoxChat from "@/components/chatContent/userBoxChat";
+import ConversationBox from "@/components/chatContent/conversationBox";
 import ConversationDetailPage from "@/components/chatContent/conversationDetailPage";
-import "@ant-design/v5-patch-for-react-19";
 import SearchInfo from "@/components/chatContent/search/searchInfo";
 import Navbar from "@/components/navbar/Navbar";
 import useSocket from "@/hooks/useSocket";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 
-// Định nghĩa kiểu dữ liệu cho navigation item
-interface NavItem {
-  key: string;
-  label: string;
-  icon: React.ReactNode;
-}
-
 const ChatApp: React.FC<{ token: string }> = ({ token }) => {
-  const { conversations, currentConversation } = useSocket(
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (token && process.env.NEXT_PUBLIC_SOCKET_URL) {
+      setIsReady(true);
+    }
+  }, [token]);
+
+  const { conversations, currentConversation, getConversationsWithUnreadCounts, } = useSocket(
     process.env.NEXT_PUBLIC_SOCKET_URL as string,
     token
   );
 
-  console.log(currentConversation);
+  console.log('Token:', token);
+  console.log('Socket URL:', process.env.NEXT_PUBLIC_SOCKET_URL);
+  console.log('Conversations:', conversations);
+  console.log('Current Conversation:', currentConversation);
+  console.log('Unread Counts:', getConversationsWithUnreadCounts());
+
+  if (!isReady) {
+    return <Spin tip="Loading token..." size="large" />;
+  }
 
   return (
     <ReactQueryProvider>
-      {/*Thanh này giúp xem thông tin cá nhân*/}
       <Navbar />
       <div className="chat-app">
-        {/* Khu vực chính (để trống cho phần nhắn tin sau) */}
         <div className="main-content">
-          {/* Danh sách tin nhắn đang chờ */}
-          <div className="flex flex-col h-full w-150 border-gray-300 border-1">
-            {/* Search area */}
+          <div className="flex-1 flex-col h-full w-150 border-gray-300 border-1">
             <SearchInfo />
-            {/* Chat list */}
             <div className="flex flex-col gap-2 border-t-1 overflow-y-auto scroll-smooth">
-              {conversations.map((conversation) => (
-                <UserBoxChat {...conversation} key={conversation.id} />
-              ))}
+              {conversations.map((conversation) => {
+                const unreadInfo = getConversationsWithUnreadCounts().find(
+                  (c) => c.conversationId === conversation.id
+                );
+                return (
+                  <ConversationBox
+                    {...conversation}
+                    key={conversation.id}
+                    unreadCount={unreadInfo?.unreadCount || 0}
+                  />
+                );
+              })}
             </div>
-            {/* Thêm các mục chat khác ở đây */}
           </div>
-          {/* Thông tin đoạn chat */}
-
+          <div className="flex-3 h-full ">
           {currentConversation ? (
-            <Suspense fallback={<Spin tip="Loading" size="large"/>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center h-full w-full">
+                  <Spin tip="Loading" size="large" />
+                </div>
+              }
+            >
               <ConversationDetailPage {...currentConversation} />
             </Suspense>
           ) : (
             <div className="flex flex-col h-full w-full justify-center align-center">
-              <span className="text-black text-center"> PRO VJP</span>
+              <span className="text-black text-center">PRO VJP</span>
             </div>
           )}
+          </div>
         </div>
       </div>
     </ReactQueryProvider>

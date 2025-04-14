@@ -3,9 +3,7 @@ import IconButton from '../IconButton';
 import { IoPersonAddOutline } from 'react-icons/io5';
 import { CiVideoOn } from 'react-icons/ci';
 import { FaMagnifyingGlass } from 'react-icons/fa6';
-import { Spin } from 'antd';
-import { useOtherUserInfo } from '@/hooks/useOtherUserInfo';
-import { useUser } from '@/context/UserContext';
+import { IoIosMore } from "react-icons/io";
 import { UserResponseDto } from '@/types/user';
 
 const ConversationDetailPrivatePageHeader: React.FC<{ otherInfo?: UserResponseDto}> = ({ otherInfo }) => {
@@ -30,6 +28,13 @@ const ConversationDetailPrivatePageHeader: React.FC<{ otherInfo?: UserResponseDt
       />
       <IconButton
         icon={<FaMagnifyingGlass style={{ fontSize: 20, color: "black" }} />}
+        onClick={() => {}}
+        selected={false}
+        className="bg-white hover:bg-gray-200"
+        size="sm"
+      />
+      <IconButton
+        icon={<IoIosMore style={{ fontSize: 20, color: "black" }} />}
         onClick={() => {}}
         selected={false}
         className="bg-white hover:bg-gray-200"
