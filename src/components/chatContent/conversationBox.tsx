@@ -1,23 +1,17 @@
 import { useUser } from "@/context/UserContext";
 import { ConversationDto } from "@/types/chat";
 import { UserResponseDto } from "@/types/user";
-import React, { useLayoutEffect, useMemo } from "react";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { useOptimistic } from "react"; // Hook mới trong React 19
 
 interface UserBoxChatProps extends ConversationDto {
-  unreadCount?: number; // Đảm bảo prop này được định nghĩa
+  unreadCount?: number;
 }
 
 const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
   const { userInfo } = useUser();
   const [otherInfo, setOtherInfo] = React.useState<UserResponseDto | undefined>(undefined);
-
-  // Sử dụng useOptimistic để quản lý unreadCount
-  const [optimisticUnreadCount, setOptimisticUnreadCount] = useOptimistic(
-    props.unreadCount || 0, // Giá trị thực tế ban đầu
-    (currentUnreadCount: number, newUnreadCount: number) => newUnreadCount // Hàm cập nhật lạc quan
-  );
+  const [unreadCount, setUnreadCount] = useState(props.unreadCount || 0); // Use useState instead of useOptimistic
 
   useLayoutEffect(() => {
     const otherPhone = props.participants.find(
@@ -41,27 +35,26 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
 
   const handleOnPress = useMemo(
     () => async () => {
-      // Cập nhật lạc quan: đặt unreadCount về 0 ngay lập tức trên UI
-      setOptimisticUnreadCount(0);
+      // Update unreadCount immediately
+      setUnreadCount(0);
 
       try {
-        // Gọi API để xử lý logic backend
+        // Call API to handle backend logic
         const res = await axios.get(`/api/conversations/initialize/${props.id}`);
         if (res.status === 200) {
-          // API thành công, không cần làm gì thêm vì cập nhật lạc quan đã được áp dụng
           console.log("Conversation initialized successfully");
         } else {
-          // Nếu API thất bại, hoàn nguyên trạng thái lạc quan về giá trị ban đầu
-          setOptimisticUnreadCount(props.unreadCount || 0);
+          // If API fails, revert the unreadCount
+          setUnreadCount(props.unreadCount || 0);
           console.error("Error initializing conversation:", res.data);
         }
       } catch (error) {
-        // Xử lý lỗi API, hoàn nguyên trạng thái lạc quan
-        setOptimisticUnreadCount(props.unreadCount || 0);
+        // Handle API error, revert the unreadCount
+        setUnreadCount(props.unreadCount || 0);
         console.error("Error initializing conversation:", error);
       }
     },
-    [props.id, props.unreadCount, setOptimisticUnreadCount]
+    [props.id, props.unreadCount]
   );
 
   return (
@@ -81,14 +74,14 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
         </span>
         <span className="text-sm text-gray-500">
           {props.messages && props.messages.length > 0
-            ? props.messages[props.messages.length - 1] // Sửa lỗi truy cập index -1
+            ? props.messages[props.messages.length - 1]
             : "..."}
         </span>
       </div>
       <div className="flex flex-1 justify-end">
-        {optimisticUnreadCount > 0 && (
+        {unreadCount > 0 && (
           <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-            {optimisticUnreadCount}
+            {unreadCount}
           </span>
         )}
       </div>

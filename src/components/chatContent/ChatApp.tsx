@@ -23,11 +23,11 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
     token
   );
 
-  console.log('Token:', token);
-  console.log('Socket URL:', process.env.NEXT_PUBLIC_SOCKET_URL);
-  console.log('Conversations:', conversations);
-  console.log('Current Conversation:', currentConversation);
-  console.log('Unread Counts:', getConversationsWithUnreadCounts());
+  // console.log('Token:', token);
+  // console.log('Socket URL:', process.env.NEXT_PUBLIC_SOCKET_URL);
+  // console.log('Conversations:', conversations);
+  // console.log('Current Conversation:', currentConversation);
+  // console.log('Unread Counts:', getConversationsWithUnreadCounts());
 
   if (!isReady) {
     return <Spin tip="Loading token..." size="large" />;
