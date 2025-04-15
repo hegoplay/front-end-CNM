@@ -1,6 +1,6 @@
 "use client";
 import React, { Suspense, useState, useEffect } from "react";
-import { Spin } from "antd";
+import { Flex, Spin } from "antd";
 import "./ChatApp.css";
 import ConversationBox from "@/components/chatContent/conversationBox";
 import ConversationDetailPage from "@/components/chatContent/conversationDetailPage";
@@ -18,10 +18,11 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
     }
   }, [token]);
 
-  const { conversations, currentConversation, getConversationsWithUnreadCounts, } = useSocket(
-    process.env.NEXT_PUBLIC_SOCKET_URL as string,
-    token
-  );
+  const {
+    conversations,
+    currentConversation,
+    getConversationsWithUnreadCounts,
+  } = useSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string, token);
 
   // console.log('Token:', token);
   // console.log('Socket URL:', process.env.NEXT_PUBLIC_SOCKET_URL);
@@ -30,7 +31,13 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
   // console.log('Unread Counts:', getConversationsWithUnreadCounts());
 
   if (!isReady) {
-    return <Spin tip="Loading token..." size="large" />;
+    return (
+      <Flex align="center" gap="middle">
+        <Spin tip="Loading token..." size="large">
+          <div style={{ height: "100px" }} /> {/* Placeholder content */}
+        </Spin>
+      </Flex>
+    );
   }
 
   return (
@@ -56,21 +63,21 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
             </div>
           </div>
           <div className="flex-3 h-full ">
-          {currentConversation ? (
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center h-full w-full">
-                  <Spin tip="Loading" size="large" />
-                </div>
-              }
-            >
-              <ConversationDetailPage {...currentConversation} />
-            </Suspense>
-          ) : (
-            <div className="flex flex-col h-full w-full justify-center align-center">
-              <span className="text-black text-center">PRO VJP</span>
-            </div>
-          )}
+            {currentConversation ? (
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center h-full w-full">
+                    <Spin tip="Loading" size="large" />
+                  </div>
+                }
+              >
+                <ConversationDetailPage {...currentConversation} />
+              </Suspense>
+            ) : (
+              <div className="flex flex-col h-full w-full justify-center align-center">
+                <span className="text-black text-center">PRO VJP</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

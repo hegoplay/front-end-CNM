@@ -15,7 +15,6 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
   useEffect(() => {
     const trimPhone = props.phoneNumber?.trim();
 
-    // Nếu không có số điện thoại hoặc là chính mình, không cần kiểm tra
     if (!trimPhone) {
       message.error("Không tìm thấy số điện thoại để kiểm tra trạng thái");
       return;
@@ -25,10 +24,8 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
       return;
     }
 
-    // Kiểm tra trạng thái bạn bè và yêu cầu kết bạn
     const checkStatus = async () => {
       try {
-        // Kiểm tra trạng thái bạn bè
         const friendResponse = await fetch(`/api/friends/check-friend-status/${trimPhone}`, {
           method: "GET",
           headers: {
@@ -36,14 +33,12 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
           },
         });
         const friendData = await friendResponse.json() as BasicResponse;
-        console.log("friendData response:", friendData);
 
         if (friendData.success && friendData.data.isFriend) {
           setRelationshipStatus("friends");
-          return; // Nếu đã là bạn, không cần kiểm tra trạng thái yêu cầu
+          return;
         }
 
-        // Kiểm tra trạng thái yêu cầu kết bạn
         const requestResponse = await fetch(`/api/friends/check-request-status/${trimPhone}`, {
           method: "GET",
           headers: {
@@ -85,7 +80,6 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-        
         },
         body: JSON.stringify({ receiverPhone: trimPhone }),
       });
@@ -116,7 +110,7 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
 
     setLoading(true);
     try {
-      const response = await fetch("/api/friends/cancel-request", {
+      const response = await fetch("/api/friends/remove-friend", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -140,6 +134,45 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
     }
   };
 
+  // Xử lý hủy kết bạn
+  const handleUnfriend = async () => {
+    const trimPhone = props.phoneNumber?.trim();
+    if (!trimPhone) {
+      message.error("Không tìm thấy số điện thoại để hủy kết bạn");
+      return;
+    }
+
+    // Hiển thị hộp thoại xác nhận
+    if (!window.confirm("Bạn có chắc muốn hủy kết bạn với người này không?")) {
+      return; // Nếu người dùng nhấn "Cancel", dừng lại
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch("/api/friends/remove-friend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ friendPhone: trimPhone }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        message.success(data.data || "Hủy kết bạn thành công");
+        setRelationshipStatus("not_friends");
+      } else {
+        message.error(data.message || "Hủy kết bạn thất bại");
+      }
+    } catch (error) {
+      console.error("Error unfriending:", error);
+      message.error("Lỗi khi hủy kết bạn");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-150 flex flex-col">
       <img
@@ -158,9 +191,14 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
             {props.name || "Không có tên"}
           </h3>
           {relationshipStatus === "friends" ? (
-            <Button type="primary" disabled={loading}>
-              Chat
-            </Button>
+            <div className="flex gap-2">
+              <Button type="primary" disabled={loading}>
+                Chat
+              </Button>
+              <Button type="text" onClick={handleUnfriend} loading={loading} >
+                Hủy kết bạn
+              </Button>
+            </div>
           ) : relationshipStatus === "pending" ? (
             <Button type="text" onClick={handleCancelFriendRequest} loading={loading}>
               Hủy yêu cầu

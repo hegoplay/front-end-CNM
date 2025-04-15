@@ -256,12 +256,15 @@ const useSocket = (url: string, token: string) => {
       }));
     };
     const onDeleteConversation = (conversationId: string) => {
+      console.log("Received delete_conversation event:", conversationId);
       setState((prev) => ({
         ...prev,
         conversations: prev.conversations.filter(
           (conv) => conv.id !== conversationId
         ),
       }));
+      
+      
     }
 
     socketInstance.on("connect", onConnect);

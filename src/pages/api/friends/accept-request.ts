@@ -14,23 +14,28 @@ export default async function handler(
   // lấy phone từ body
   const { responsePhone } = req.body;
 
+  // console.log("URL: ", `${process.env.NEXT_PUBLIC_API_BASE_URL}/friends/accept-request?senderPhoneNumber=${responsePhone}`)
+
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // Sửa lại env variable
-    const response = await fetch(`${apiUrl}/friends/accept-request/?senderPhoneNumber=${responsePhone}`, {
+    const response = await fetch(`${apiUrl}/friends/accept-request?senderPhoneNumber=${responsePhone}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         // Thêm headers khác nếu cần (Authorization, etc.)
         "Authorization": `Bearer ${req.cookies.authToken}`,
       },
+      body: JSON.stringify({}),
     });
 
     // Xử lý response không thành công
     if (!response.ok) {
+      const content = await response.text();
+      console.error("Response not ok: ", content);
       throw new Error(`API responded with status ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.text();
     // const data = await response.json();
     return res.status(200).json({success: true, data: data});
   } catch (error) {

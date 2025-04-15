@@ -26,7 +26,7 @@ const SearchInfo = () => {
   const [index, setIndex] = useState(0);
   const [userData, setUserData] = useState<any>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
-
+  
   const values: ModalItem[] = [
     {
       title: "Thêm bạn",

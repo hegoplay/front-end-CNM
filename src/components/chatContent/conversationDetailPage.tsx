@@ -20,6 +20,8 @@ const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
   const [replyingTo, setReplyingTo] = useState<MessageResponse | null>(null); // Trạng thái tin nhắn đang trả lời
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  
+
   // Đánh dấu cuộc trò chuyện là đã đọc khi tải trang
   useLayoutEffect(() => {
     if (props.id) {

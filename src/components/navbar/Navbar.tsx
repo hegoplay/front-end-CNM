@@ -19,6 +19,7 @@ interface FriendRequest {
 }
 
 const Navbar = () => {
+  
   const router = useRouter();
   const { token } = useToken();
   const { logout, userInfo } = useUser();
@@ -36,7 +37,8 @@ const Navbar = () => {
         });
         if (response.ok) {
           const data = await response.json();
-          setFriendRequests(data.requests || []);
+          // console.log(data)
+          setFriendRequests(data.data || []);
         } else {
           message.error("Không thể tải danh sách yêu cầu kết bạn");
         }
@@ -80,14 +82,10 @@ const Navbar = () => {
   // Xử lý từ chối yêu cầu kết bạn
   const handleRejectRequest = async (senderPhoneNumber: string) => {
     try {
-      const response = await fetch("/api/friends/reject-request", {
+      const response = await fetch("/api/friends/cancel-request", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("authToken="))
-            ?.split("=")[1]}`,
         },
         body: JSON.stringify({ senderPhoneNumber }),
       });
@@ -180,7 +178,7 @@ const Navbar = () => {
     <div className="flex justify-between items-center h-16 bg-red-50 w-full px-10 gap-4 sticky top-0">
       <div className="flex justify-start items-center">
         <Link href="/">
-          <h3 className="text-2xl font-bold text-red-500">Zala</h3>
+          <h3 className="text-2xl font-bold text-red-500" style={{margin: 0}}>Zala</h3>
         </Link>
       </div>
 

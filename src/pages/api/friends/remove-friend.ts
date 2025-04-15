@@ -11,13 +11,13 @@ export default async function handler(
     return res.status(405).json(null);
   }
 
-  const {senderPhoneNumber} = req.body
+  const {friendPhone} = req.body
 
   // console.log("receiverPhone:", receiverPhone);
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // Sửa lại env variable
-    const response = await fetch(`${apiUrl}/friends/cancel-request?receiverPhoneNumber=${senderPhoneNumber}`, {
+    const response = await fetch(`${apiUrl}/friends/remove-friend?friendPhoneNumber=${friendPhone}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
