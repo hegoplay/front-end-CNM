@@ -100,6 +100,9 @@ export default async function handler(
     });
 
     if (!backendResponse.ok) {
+      //xuất thông báo 
+      const errorText = await backendResponse.json();
+      console.error("Backend Error:", errorText);
       throw new Error(`Backend API responded with status ${backendResponse.status}`);
     }
 

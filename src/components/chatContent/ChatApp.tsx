@@ -12,23 +12,21 @@ import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 const ChatApp: React.FC<{ token: string }> = ({ token }) => {
   const [isReady, setIsReady] = useState(false);
 
+  // Move useSocket hook to the top level, before any early returns
+  const {
+    conversations,
+    currentConversation,
+    getConversationsWithUnreadCounts,
+  } = useSocket(
+    process.env.NEXT_PUBLIC_SOCKET_URL as string || "",
+    isReady ? token : "" // Pass null or handle token conditionally inside the hook
+  );
+
   useEffect(() => {
     if (token && process.env.NEXT_PUBLIC_SOCKET_URL) {
       setIsReady(true);
     }
   }, [token]);
-
-  const {
-    conversations,
-    currentConversation,
-    getConversationsWithUnreadCounts,
-  } = useSocket(process.env.NEXT_PUBLIC_SOCKET_URL as string, token);
-
-  // console.log('Token:', token);
-  // console.log('Socket URL:', process.env.NEXT_PUBLIC_SOCKET_URL);
-  // console.log('Conversations:', conversations);
-  // console.log('Current Conversation:', currentConversation);
-  // console.log('Unread Counts:', getConversationsWithUnreadCounts());
 
   if (!isReady) {
     return (
@@ -62,7 +60,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
               })}
             </div>
           </div>
-          <div className="flex-3 h-full ">
+          <div className="flex-3 h-full">
             {currentConversation ? (
               <Suspense
                 fallback={

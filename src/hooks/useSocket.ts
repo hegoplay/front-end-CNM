@@ -39,6 +39,8 @@ interface SocketActions {
 }
 
 const useSocket = (url: string, token: string) => {
+
+  
   const [socket, setSocket] = useState<SocketType | null>(null);
   const [manager, setManager] = useState<ManagerType | null>(null);
   const [state, setState] = useState<SocketState>({
