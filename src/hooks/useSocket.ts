@@ -99,6 +99,7 @@ const useSocket = (url: string, token: string) => {
     };
 
     const onNewMessage = (message: MessageResponse) => {
+      console.log("New message received:", message);
       setState((prev) => {
         if (prev.messages.some((m) => m.id === message.id)) return prev;
         if (prev.currentConversation?.id !== message.conversationId) {
@@ -110,6 +111,7 @@ const useSocket = (url: string, token: string) => {
               [message.conversationId]:
                 (prev.unreadCounts[message.conversationId] || 0) + 1,
             },
+            
           };
         }
         return {
@@ -121,7 +123,23 @@ const useSocket = (url: string, token: string) => {
               message,
             ],
           },
+          // update on new message
           messages: [...prev.messages, message],
+          unreadCounts: {
+            ...prev.unreadCounts,
+            [message.conversationId]: 0,
+          },
+          conversations: prev.conversations.map((conv) => {
+            if (conv.id === message.conversationId) {
+              return {
+                ...conv,
+                lastMessage: message,
+                unreadCount: 0,
+                updatedAt: message.createdAt,
+              };
+            }
+            return conv;
+          }),
         };
       });
     };

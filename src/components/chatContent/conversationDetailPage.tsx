@@ -3,11 +3,11 @@ import { FiPaperclip, FiSend, FiX } from "react-icons/fi";
 import { ConversationDetailDto, MessageResponse } from "@/types/chat";
 import { useUser } from "@/context/UserContext";
 import ConversationDetailPrivatePageHeader from "./conversationDetailPageHeader";
-import TextArea from "antd/es/input/TextArea";
 import { Spin, message, Button } from "antd";
 import { useOtherUserInfo } from "@/hooks/useOtherUserInfo";
 import MessageList from "./messageType/MessageList";
 import axios from "axios";
+import RightMorePrivateConversation from "./rightmore/RightMoreConversation";
 
 const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
   ...props
@@ -18,9 +18,8 @@ const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [replyingTo, setReplyingTo] = useState<MessageResponse | null>(null); // Trạng thái tin nhắn đang trả lời
+  const [openMore, setOpenMore] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  
 
   // Đánh dấu cuộc trò chuyện là đã đọc khi tải trang
   useLayoutEffect(() => {
@@ -160,117 +159,127 @@ const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
     }
   };
 
+  // Xử lý onMoreClick trong MessageList
+
   if (isLoading) return <Spin />;
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <ConversationDetailPrivatePageHeader otherInfo={otherInfo || undefined} />
-
-      {/* Khu vực tin nhắn */}
-      <div className="flex flex-col flex-1 overflow-y-auto bg-gray-100 p-4">
-        <MessageList
-          currentUserPhone={userInfo.phoneNumber}
-          messages={props.messageDetails}
+    <div className="flex h-full">
+      <div className="flex flex-1 flex-col h-full">
+        {/* Header */}
+        <ConversationDetailPrivatePageHeader
           otherInfo={otherInfo || undefined}
-          onReply={handleReply} // Truyền hàm xử lý trả lời
+          openMore={openMore}
+          setOpenMore={setOpenMore}
         />
-      </div>
 
-      {/* Khu vực nhập tin nhắn */}
-      <div className="p-3 border-t border-gray-300 bg-white">
-        {/* Xem trước tin nhắn trả lời */}
-        {replyingTo && (
-          <div className="flex items-center justify-between mb-2 p-2 bg-gray-100 rounded">
-            <span className="truncate max-w-xs">
-              <span className="font-semibold">
-                Trả lời{" "}
-                {replyingTo.senderId === userInfo.phoneNumber
-                  ? "chính bạn"
-                  : otherInfo?.name || "Người dùng"}
-                :{" "}
+        {/* Khu vực tin nhắn */}
+        <div className="flex flex-col flex-1 bg-gray-100 overflow-scroll">
+          <MessageList
+            currentUserPhone={userInfo.phoneNumber}
+            messages={props.messageDetails}
+            otherInfo={otherInfo || undefined}
+            onReply={handleReply} // Truyền hàm xử lý trả lời
+          />
+        </div>
+
+        {/* Khu vực nhập tin nhắn */}
+        <div className="p-3 border-t border-gray-300 bg-white">
+          {/* Xem trước tin nhắn trả lời */}
+          {replyingTo && (
+            <div className="flex items-center justify-between mb-2 p-2 bg-gray-100 rounded">
+              <span className="truncate max-w-xs">
+                <span className="font-semibold">
+                  Trả lời{" "}
+                  {replyingTo.senderId === userInfo.phoneNumber
+                    ? "chính bạn"
+                    : otherInfo?.name || "Người dùng"}
+                  :{" "}
+                </span>
+                {replyingTo.isRecalled
+                  ? "Tin nhắn đã thu hồi"
+                  : replyingTo.type === "TEXT"
+                  ? replyingTo.content
+                  : replyingTo.type === "MEDIA"
+                  ? "Đã gửi một tệp đa phương tiện"
+                  : replyingTo.type === "FILE"
+                  ? "Đã gửi một tệp"
+                  : "Sự kiện cuộc gọi"}
               </span>
-              {replyingTo.isRecalled
-                ? "Tin nhắn đã thu hồi"
-                : replyingTo.type === "TEXT"
-                ? replyingTo.content
-                : replyingTo.type === "MEDIA"
-                ? "Đã gửi một tệp đa phương tiện"
-                : replyingTo.type === "FILE"
-                ? "Đã gửi một tệp"
-                : "Sự kiện cuộc gọi"}
-            </span>
-            <Button type="text" onClick={cancelReply}>
-              <FiX />
-            </Button>
-          </div>
-        )}
+              <Button type="text" onClick={cancelReply}>
+                <FiX />
+              </Button>
+            </div>
+          )}
 
-        {/* Hiển thị file đã chọn */}
-        {file && (
-          <div className="flex items-center justify-between mb-2 p-2 bg-gray-100 rounded">
-            <span className="truncate max-w-xs">{file.name}</span>
+          {/* Hiển thị file đã chọn */}
+          {file && (
+            <div className="flex items-center justify-between mb-2 p-2 bg-gray-100 rounded">
+              <span className="truncate max-w-xs">{file.name}</span>
+              <button
+                onClick={removeFile}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <FiX />
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 w-full min-w-0 flex-wrap">
+            {/* Nút đính kèm file */}
             <button
-              onClick={removeFile}
-              className="text-gray-500 hover:text-gray-700"
+              className="p-2 rounded-full hover:bg-gray-200"
+              onClick={() => fileInputRef.current?.click()}
             >
-              <FiX />
+              <FiPaperclip className="text-gray-600" />
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="*"
+              />
+            </button>
+
+            {/* Input nhập tin nhắn */}
+            <div className="flex-1 relative min-w-0">
+              <textarea
+                // value={messageText}
+                onChange={(e) => {
+                  if (messageText.length == 0) setMessageText(e.target.value);
+                  if (e.target.value.length == 0) setMessageText("");
+                }}
+                ref={inputRef}
+                className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 min-h-[40px] max-h-[120px] min-w-[50px] overflow-y-auto"
+                onKeyDown={handleKeyPress}
+                placeholder="Nhập tin nhắn..."
+                rows={1}
+                disabled={isUploading}
+              />
+            </div>
+
+            {/* Nút gửi */}
+            <button
+              onClick={handleSendMessage}
+              disabled={(!messageText.trim() && !file) || isUploading}
+              className={`p-2 rounded-full ${
+                (messageText.trim() || file) && !isUploading
+                  ? "bg-blue-500 hover:bg-blue-600"
+                  : "bg-gray-300 cursor-not-allowed"
+              }`}
+            >
+              {isUploading ? (
+                <Spin size="small" />
+              ) : (
+                <FiSend className="text-white" />
+              )}
             </button>
           </div>
-        )}
-
-        <div className="flex items-center gap-2">
-          {/* Nút đính kèm file */}
-          <button
-            className="p-2 rounded-full hover:bg-gray-200"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <FiPaperclip className="text-gray-600" />
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="*"
-            />
-          </button>
-
-          {/* Input nhập tin nhắn */}
-          <div className="flex-1 relative">
-            <textarea
-              // value={messageText}
-              onChange={(e) => {
-                if (messageText.length == 0) setMessageText(e.target.value);
-                if (e.target.value.length == 0) setMessageText("");
-              }}
-              ref={inputRef}
-              className="w-full resize-none border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
-              onKeyDown={handleKeyPress}
-              placeholder="Nhập tin nhắn..."
-              rows={1}
-              disabled={isUploading}
-            />
-          </div>
-
-          {/* Nút gửi */}
-          <button
-            onClick={handleSendMessage}
-            disabled={(!messageText.trim() && !file) || isUploading}
-            className={`p-2 rounded-full ${
-              (messageText.trim() || file) && !isUploading
-                ? "bg-blue-500 hover:bg-blue-600"
-                : "bg-gray-300 cursor-not-allowed"
-            }`}
-          >
-            {isUploading ? (
-              <Spin size="small" />
-            ) : (
-              <FiSend className="text-white" />
-            )}
-          </button>
         </div>
       </div>
+      {/* Hiển thị thông tin người dùng khác */}
+      {openMore && <RightMorePrivateConversation conversationInfo={props} />}
     </div>
   );
 };

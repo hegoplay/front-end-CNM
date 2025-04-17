@@ -3,7 +3,7 @@ import React from 'react'
 
 const AvatarImg : React.FC<{imgUrl: string}>= ({imgUrl}) => {
   return (
-    <Image style={{width:48, height: 48, borderRadius: "50%"}} src={imgUrl}></Image>
+    <img style={{width:48, height: 48, borderRadius: "50%"}} src={imgUrl}></img>
   )
 }
 

@@ -27,14 +27,17 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
       setIsReady(true);
     }
   }, [token]);
+  
+  console.log("Conversations: ", conversations);
+  // Handle the case when token is not available
 
   if (!isReady) {
     return (
-      <Flex align="center" gap="middle">
-        <Spin tip="Loading token..." size="large">
+      <div className="flex items-center justify-center h-full">
+        <Spin size="large">
           <div style={{ height: "100px" }} /> {/* Placeholder content */}
         </Spin>
-      </Flex>
+      </div>
     );
   }
 
@@ -45,7 +48,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
         <div className="main-content">
           <div className="flex-1 flex-col h-full w-150 border-gray-300 border-1">
             <SearchInfo />
-            <div className="flex flex-col gap-2 border-t-1 overflow-y-auto scroll-smooth">
+            <div className="flex flex-col gap-2 border-t-1 overflow-y-auto scroll-smooth"> 
               {conversations.map((conversation) => {
                 const unreadInfo = getConversationsWithUnreadCounts().find(
                   (c) => c.conversationId === conversation.id

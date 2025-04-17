@@ -19,6 +19,7 @@ const UserConfig: React.FC<UserResponseDto> = ({ ...props }) => {
   const { updateUserInfo } = useUser();
   const [selectedFile, setSelectedFile] = useState<File | null>(null); // Lưu file gốc
   const router = useRouter();
+  const selectRef = useRef<HTMLSelectElement>(null); // Tham chiếu đến select
   // dung useActionState
 
   // tao state de luu thong tin user

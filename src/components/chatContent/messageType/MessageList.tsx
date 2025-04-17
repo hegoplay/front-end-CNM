@@ -134,7 +134,7 @@ const MessageList: React.FC<MessageListProps> = ({
   return (
     <div
       ref={containerRef}
-      className="flex flex-col w-full h-full overflow-y-auto"
+      className="flex flex-col w-full h-full p-4"
     >
       {messages.length > 0 ? (
         <>

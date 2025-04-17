@@ -10,7 +10,9 @@ interface UserBoxChatProps extends ConversationDto {
 
 const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
   const { userInfo } = useUser();
-  const [otherInfo, setOtherInfo] = React.useState<UserResponseDto | undefined>(undefined);
+  const [otherInfo, setOtherInfo] = React.useState<UserResponseDto | undefined>(
+    undefined
+  );
   const [unreadCount, setUnreadCount] = useState(props.unreadCount || 0); // Use useState instead of useOptimistic
 
   useLayoutEffect(() => {
@@ -40,7 +42,9 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
 
       try {
         // Call API to handle backend logic
-        const res = await axios.get(`/api/conversations/initialize/${props.id}`);
+        const res = await axios.get(
+          `/api/conversations/initialize/${props.id}`
+        );
         if (res.status === 200) {
           console.log("Conversation initialized successfully");
         } else {
@@ -57,6 +61,31 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
     [props.id, props.unreadCount]
   );
 
+  const printLastMessage = useMemo((): string => {
+    const whoIsSender = props.lastMessage?.senderId === userInfo?.phoneNumber;
+
+    const isMedia =
+      props.lastMessage?.type === "MEDIA" || props.lastMessage?.type === "FILE";
+
+    const isText = props.lastMessage?.type === "TEXT";
+
+    let label = isText ? (whoIsSender ? "Bạn: " : "") : "";
+
+    if (isMedia) {
+      label = label + "Đã gửi một tệp đính kèm";
+    } else if (isText) {
+      label = label + props.lastMessage.content;
+    } else {
+      label = label + "Đã tạo Cuộc gọi";
+    }
+
+    if (props.lastMessage) {
+      return label;
+    } else {
+      return "hãy bắt đầu cuộc hội thoại";
+    }
+  }, [props.lastMessage]);
+
   return (
     <div
       className="flex items-center bg-transparent cursor-pointer hover:bg-gray-200 p-3"
@@ -68,22 +97,25 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
         src={otherInfo?.baseImg || "/avatar.jpg"}
         className="w-10 h-10 rounded-full mr-2"
       />
-      <div className="flex flex-col">
-        <span className="text-black">
-          {otherInfo ? otherInfo.name : "Loading..."}
-        </span>
-        <span className="text-sm text-gray-500">
-          {props.messages && props.messages.length > 0
-            ? props.messages[props.messages.length - 1]
-            : "..."}
-        </span>
-      </div>
-      <div className="flex flex-1 justify-end">
-        {unreadCount > 0 && (
-          <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-            {unreadCount}
+      <div className="flex-1 flex-col">
+        <div className="flex items-center justify-between">
+          <span className="text-black">
+            {otherInfo ? otherInfo.name : "Loading..."}
           </span>
-        )}
+          <span className="text-sm text-gray-500">{props.updatedAt}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-500 flex-1">
+            {printLastMessage}
+          </span>
+          <div className="mx-2">
+            {unreadCount > 0 && (
+              <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

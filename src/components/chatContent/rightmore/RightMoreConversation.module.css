@@ -1,0 +1,79 @@
+.modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modalOpen {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+.modalClose {
+  animation: fadeOut 0.3s ease-in-out forwards;
+}
+
+.modalContent {
+  position: relative;
+  max-width: 1024px; /* max-w-4xl */
+  max-height: 90vh;
+}
+
+.closeButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #1f2937; /* bg-gray-800 */
+  color: white;
+  border-radius: 9999px; /* rounded-full */
+  padding: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background-color: #4b5563; /* hover:bg-gray-600 */
+}
+
+.fileLink {
+  display: block;
+  padding: 8px;
+  background-color: #f3f4f6; /* bg-gray-100 */
+  border-radius: 4px;
+  text-decoration: none;
+  color: #1f2937; /* text-gray-800 */
+  font-size: 0.875rem; /* text-sm */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileLink:hover {
+  background-color: #e5e7eb; /* hover:bg-gray-200 */
+  color: #2563eb; /* hover:text-blue-600 */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}

@@ -33,6 +33,8 @@ export default async function handler(
     });
     // Xử lý response không thành công
     if (response.status != 200) {
+      const errorData = await response.json();
+      console.error("Error response:", errorData);
       throw new Error(`Xóa tin nhắn thất bại`);
     }
     return res.status(200).json({success: true, message: "success"});

@@ -52,9 +52,16 @@ export interface ConversationDto {
   type: ConversationType;
   participants: string[];
   messages: string[]; // message IDs
-  updateAt: string; // ISO 8601 format
+  updatedAt: string; // ISO 8601 format
   callInProgress: boolean;
   currentCallId?: string;
+// updated
+  conversationName?: string;
+  leader?: string;
+  admins?: string[];
+  lastMessage: MessageResponse;
+  conversationImgUrl?: string;
+  unreadCount?: number;
 }
 
 export interface ConversationDetailDto {
@@ -65,6 +72,10 @@ export interface ConversationDetailDto {
   updateAt: string; // ISO 8601 format
   callInProgress: boolean;
   currentCallId?: string;
+  conversationName?: string;
+  leader?: string;
+  admins?: string[];
+  conversationImgUrl?: string;
 }
 
 // Type guards
