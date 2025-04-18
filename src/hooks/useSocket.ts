@@ -11,6 +11,7 @@ import {
   MessageType,
   Reaction,
 } from "../types/chat";
+import CallInvitation from "@/types/callInvitation";
 
 type AckResponse =
   | "JOIN_SUCCESS"
@@ -28,19 +29,14 @@ interface SocketState {
 }
 
 interface SocketActions {
-  joinConversation: (conversationId: string) => Promise<boolean>;
-  sendTextMessage: (content: string) => Promise<boolean>;
-  recallMessage: (messageId: string) => Promise<boolean>;
-  reactToMessage: (messageId: string, emoji: string) => Promise<boolean>;
   getConversationsWithUnreadCounts: () => {
     conversationId: string;
     unreadCount: number;
   }[];
+  startCall: (conversationId: string) => void; // Thêm action để khởi tạo cuộc gọi
 }
 
 const useSocket = (url: string, token: string) => {
-
-  
   const [socket, setSocket] = useState<SocketType | null>(null);
   const [manager, setManager] = useState<ManagerType | null>(null);
   const [state, setState] = useState<SocketState>({
@@ -52,7 +48,16 @@ const useSocket = (url: string, token: string) => {
 
   // Ref để theo dõi component có unmount hay không
   const isMounted = useRef(true);
+  // Callback để component xử lý call_invitation
+  const [onCallInvitation, setOnCallInvitation] = useState<
+    | ((data: CallInvitation | null) => void)
+    | null
+  >(null);
 
+  // Callback để component xử lý call_error
+  const [onCallError, setOnCallError] = useState<
+    ((error: string | null) => void) | null
+  >(null);
   // Khởi tạo socket connection
   useEffect(() => {
     // Kiểm tra giá trị url và token
@@ -62,7 +67,7 @@ const useSocket = (url: string, token: string) => {
     }
 
     const newManager = new Manager(url, {
-      reconnectionAttempts: 3,
+      reconnectionAttempts: 2,
       reconnectionDelay: 1000,
       autoConnect: true,
       query: { token },
@@ -111,7 +116,18 @@ const useSocket = (url: string, token: string) => {
               [message.conversationId]:
                 (prev.unreadCounts[message.conversationId] || 0) + 1,
             },
-            
+            conversations: prev.conversations.map((conv) => {
+              if (conv.id === message.conversationId) {
+                return {
+                  ...conv,
+                  lastMessage: message,
+                  unreadCount:
+                    (prev.unreadCounts[message.conversationId] || 0) + 1,
+                  updatedAt: message.createdAt,
+                };
+              }
+              return conv;
+            }),
           };
         }
         return {
@@ -176,6 +192,7 @@ const useSocket = (url: string, token: string) => {
       conversationId: string;
     }) => {
       console.log("Reaction added:", data);
+      console.log("Is mounted:", isMounted.current);
       setState((prev) => ({
         ...prev,
         messages: prev.messages.map((msg) => {
@@ -241,7 +258,6 @@ const useSocket = (url: string, token: string) => {
             : prev.currentConversation,
       }));
     };
-
     const onUnreadCounts = (unreadCounts: {
       [conversationId: string]: number;
     }) => {
@@ -251,7 +267,6 @@ const useSocket = (url: string, token: string) => {
         unreadCounts,
       }));
     };
-
     const onReadConversation = (data: {
       conversationId: string;
       userId: string;
@@ -268,7 +283,6 @@ const useSocket = (url: string, token: string) => {
         },
       }));
     };
-    
     const onNewConversation = (conversation: ConversationDto) => {
       setState((prev) => ({
         ...prev,
@@ -283,9 +297,30 @@ const useSocket = (url: string, token: string) => {
           (conv) => conv.id !== conversationId
         ),
       }));
-      
-      
-    }
+    };
+    // Xử lý call_invitation
+    const onCallInvitationReceived = (data: CallInvitation | null) => {
+      // console.log("Received call invitation:", data, "Socket ID:", socketInstance?.id);
+      // Kiểm tra xem component còn mounted không
+      if (data) {
+        console.log("Call invitation data: ", data);
+      }
+      // Gọi callback nếu có
+      // và component còn mounted
+      console.log("onCallInvitation: ", onCallInvitation);
+      console.log("isMounted: ", isMounted.current);
+      if (onCallInvitation && isMounted.current) {
+        console.log("Call invitation data: ", data);
+        onCallInvitation(data);
+      }
+    };
+    
+    const onCallErrorReceived = (error: string | null) => {
+      // console.log("Received call error:", error, "Socket ID:", socketInstance?.id);
+      if (onCallError && isMounted.current) {
+        onCallError(error);
+      }
+    };
 
     socketInstance.on("connect", onConnect);
     socketInstance.on("disconnect", onDisconnect);
@@ -299,12 +334,15 @@ const useSocket = (url: string, token: string) => {
     socketInstance.on("read_conversation", onReadConversation);
     socketInstance.on("new_conversation", onNewConversation);
     socketInstance.on("delete_conversation", onDeleteConversation);
+    socketInstance.on("call_invitation", onCallInvitationReceived); // Thêm sự kiện call_invitation
+    socketInstance.on("call_error", onCallErrorReceived); // Thêm sự kiện call_error
 
     setManager(newManager);
     setSocket(socketInstance);
 
     // Cleanup chỉ khi component unmount
     return () => {
+      console.log("Cleanup useSocket: Setting isMounted to false");
       isMounted.current = false;
     };
   }, [url, token]);
@@ -325,6 +363,8 @@ const useSocket = (url: string, token: string) => {
         socket.off("read_conversation");
         socket.off("new_conversation");
         socket.off("delete_conversation");
+        socket.off("call_invitation"); // Gỡ sự kiện call_invitation
+        socket.off("call_error"); // Gỡ sự kiện call_error
         socket.disconnect();
       }
       if (manager) {
@@ -333,69 +373,6 @@ const useSocket = (url: string, token: string) => {
     };
   }, [socket, manager]); // Dependency là socket và manager, không chạy lại trừ khi socket/manager thay đổi
 
-  const joinConversation = useCallback(
-    async (conversationId: string) => {
-      if (!socket) return false;
-
-      return new Promise<boolean>((resolve) => {
-        socket.emit("join_conversation", conversationId, (ack: AckResponse) => {
-          resolve(ack === "JOIN_SUCCESS");
-        });
-      });
-    },
-    [socket]
-  );
-
-  const sendTextMessage = useCallback(
-    async (content: string) => {
-      if (!socket || !state.currentConversation) return false;
-
-      const messageRequest: MessageRequest = {
-        conversationId: state.currentConversation.id,
-        content,
-        type: MessageType.TEXT,
-        senderId: "",
-      };
-
-      return new Promise<boolean>((resolve) => {
-        socket.emit("send_text_message", messageRequest, (ack: AckResponse) => {
-          resolve(ack === "SENT");
-        });
-      });
-    },
-    [socket, state.currentConversation]
-  );
-
-  const recallMessage = useCallback(
-    async (messageId: string) => {
-      if (!socket) return false;
-
-      return new Promise<boolean>((resolve) => {
-        socket.emit("recall_message", messageId, (ack: AckResponse) => {
-          resolve(ack === "RECALLED");
-        });
-      });
-    },
-    [socket]
-  );
-
-  const reactToMessage = useCallback(
-    async (messageId: string, emoji: string) => {
-      if (!socket) return false;
-
-      return new Promise<boolean>((resolve) => {
-        socket.emit(
-          "react_to_message",
-          { messageId, emoji },
-          (ack: AckResponse) => {
-            resolve(ack === "REACTED");
-          }
-        );
-      });
-    },
-    [socket]
-  );
-
   const getConversationsWithUnreadCounts = useCallback(() => {
     return Object.entries(state.unreadCounts).map(
       ([conversationId, unreadCount]) => ({
@@ -403,26 +380,36 @@ const useSocket = (url: string, token: string) => {
         unreadCount,
       })
     );
+  
   }, [state.unreadCounts]);
+
+  // Thêm action để khởi tạo cuộc gọi
+  const startCall = useCallback(
+    (conversationId: string) => {
+      console.log("Starting call for conversation:", conversationId);
+      if (socket) {
+        socket.emit("start_call", { conversationId });
+      }
+    },
+    [socket]
+  );
 
   const actions: SocketActions = useMemo(
     () => ({
-      joinConversation,
-      sendTextMessage,
-      recallMessage,
-      reactToMessage,
       getConversationsWithUnreadCounts,
+      startCall, // Thêm startCall vào actions
     }),
     [
-      joinConversation,
-      sendTextMessage,
-      recallMessage,
-      reactToMessage,
       getConversationsWithUnreadCounts,
+      startCall,
     ]
   );
 
-  return { ...state, ...actions, socket };
+  return { ...state, ...actions, 
+    socket, 
+    setOnCallInvitation, // Cho phép component đăng ký callback cho call_invitation
+    setOnCallError, // Cho phép component đăng ký callback cho call_error
+  };
 };
 
 export default useSocket;

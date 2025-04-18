@@ -25,7 +25,7 @@ const MyMessageContent: React.FC<MyMessageContentProps> = ({
   const [isReactionPopoverOpen, setIsReactionPopoverOpen] = useState(false);
 
   // Danh sách emoji để chọn
-  const emojis = ["👍", "❤️", "😂", "😢", "😮", "🙌"];
+  const emojis = ["👍", "❤️", "😂", "😢", "😡", "😮"];
 
   // Xử lý chọn emoji
   const handleReact = async (emoji: string) => {

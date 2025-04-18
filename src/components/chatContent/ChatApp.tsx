@@ -1,5 +1,5 @@
 "use client";
-import React, { Suspense, useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect, useCallback } from "react";
 import { Flex, Spin } from "antd";
 import "./ChatApp.css";
 import ConversationBox from "@/components/chatContent/conversationBox";
@@ -8,38 +8,46 @@ import SearchInfo from "@/components/chatContent/search/searchInfo";
 import Navbar from "@/components/navbar/Navbar";
 import useSocket from "@/hooks/useSocket";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
+import { useRouter } from "next/navigation";
+import CallInvitation from "@/types/callInvitation";
 
 const ChatApp: React.FC<{ token: string }> = ({ token }) => {
-  const [isReady, setIsReady] = useState(false);
+  
+  const router = useRouter();
+
+  console.log("Token client-side:", token);
 
   // Move useSocket hook to the top level, before any early returns
   const {
     conversations,
     currentConversation,
     getConversationsWithUnreadCounts,
+    startCall,
+    setOnCallInvitation, 
+    setOnCallError
   } = useSocket(
     process.env.NEXT_PUBLIC_SOCKET_URL as string || "",
-    isReady ? token : "" // Pass null or handle token conditionally inside the hook
+    token// Pass null or handle token conditionally inside the hook
   );
 
-  useEffect(() => {
-    if (token && process.env.NEXT_PUBLIC_SOCKET_URL) {
-      setIsReady(true);
-    }
-  }, [token]);
+  const handleCallInvitation = useCallback((data: CallInvitation | null) => {
+    console.log("Call invitation data: ", data);
+    if (!data?.conversationId) return;
+    router.push(`/call/${data.conversationId}`);
+  }, [router]);
   
-  console.log("Conversations: ", conversations);
+  const handleCallError = useCallback((error: string | null) => {
+    if (!error) return;
+    alert(`Failed: ${error}`);
+  }, []);
+  
+  useEffect(() => {
+    setOnCallInvitation(handleCallInvitation);
+    setOnCallError(handleCallError);
+  }, [handleCallInvitation, handleCallError, setOnCallInvitation, setOnCallError]);
+  
+  // console.log("Conversations: ", conversations);
   // Handle the case when token is not available
-
-  if (!isReady) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Spin size="large">
-          <div style={{ height: "100px" }} /> {/* Placeholder content */}
-        </Spin>
-      </div>
-    );
-  }
 
   return (
     <ReactQueryProvider>
@@ -72,7 +80,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
                   </div>
                 }
               >
-                <ConversationDetailPage {...currentConversation} />
+                <ConversationDetailPage {...currentConversation} startCall={startCall} />
               </Suspense>
             ) : (
               <div className="flex flex-col h-full w-full justify-center align-center">
