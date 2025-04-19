@@ -185,6 +185,36 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
             </div>
           </div>
         )}
+        <SectionBox>
+          <Button 
+            type="default"
+            danger
+            className="w-full"
+            onClick={() => {
+              // Gọi API để xóa nội dung cuộc hội thoại
+              fetch(`/api/messages/conversation/${conversationInfo.id}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("Failed to delete conversation content");
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  console.log("Conversation content deleted successfully", data);
+                })
+                .catch((error) => {
+                  console.error("Error deleting conversation content:", error);
+                });
+            }}
+          >
+            Xóa nội dung cuộc hội thoại
+          </Button>
+        </SectionBox>
       </>
     </ExtendWrapper>
   );
