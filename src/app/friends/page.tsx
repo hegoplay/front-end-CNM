@@ -1,9 +1,173 @@
-import React from 'react'
+// import React from 'react'
+
+// const FriendPage = () => {
+//   return (
+//     <div>
+//     </div>
+//   )
+// }
+
+"use client";
+
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation' // Import useRouter
+import Navbar from '../../components/navbar/Navbar'
+
+const friends = [
+  { name: 'Nguyen Van A', avatar: 'https://i.pravatar.cc/50?img=1' },
+  { name: 'Nguyen Van B', avatar: 'https://i.pravatar.cc/50?img=2' },
+  { name: 'Nguyen Van C', avatar: 'https://i.pravatar.cc/50?img=3' },
+]
+
+const groups = [
+  { name: 'Nhóm 1', avatar: 'https://i.pravatar.cc/50?img=6', description: 'Mô tả nhóm 1' },
+  { name: 'Nhóm 2', avatar: 'https://i.pravatar.cc/50?img=7', description: 'Mô tả nhóm 2' },
+  { name: 'Nhóm 3', avatar: 'https://i.pravatar.cc/50?img=8', description: 'Mô tả nhóm 3' },
+]
 
 const FriendPage = () => {
+  const [activeTab, setActiveTab] = useState('friends') // State để quản lý tab đang được chọn
+  const router = useRouter() // Sử dụng useRouter để điều hướng
+
   return (
-    <div>FriendPage</div>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'Arial, sans-serif' }}>
+      {/* Navbar chính */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: '#fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+        <Navbar />
+      </div>
+
+      {/* Nút trở về */}
+      <div style={{ padding: '10px', backgroundColor: '#ffffff', border: '1px solid #ddd' }}>
+        <button
+          onClick={() => router.back()} // Quay lại trang trước đó
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            color: '#000000',
+            border: '1px solid #000000',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          Trở về
+        </button>
+      </div>
+
+      {/* Nội dung chính */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        {/* Menu bên trái */}
+        <div
+          style={{
+            width: '250px',
+            backgroundColor: '#f0f2f5',
+            padding: '20px',
+            overflowY: 'auto',
+            border: '1px solid #ddd',
+            borderRadius: '8px', 
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', 
+            margin: '10px', 
+          }}
+        >
+          <h3 style={{ marginBottom: '20px', fontWeight: 'bold', color: '#333' }}>☰ Menu</h3>
+          <div
+            style={{
+              marginBottom: '15px',
+              fontWeight: activeTab === 'friends' ? 'bold' : 'normal',
+              cursor: 'pointer',
+              padding: '10px', 
+              borderRadius: '5px',
+              backgroundColor: activeTab === 'friends' ? '#e0e0e0' : 'transparent', 
+            }}
+            onClick={() => setActiveTab('friends')}
+          >
+            Danh sách bạn bè
+          </div>
+          <div
+            style={{
+              marginBottom: '15px',
+              fontWeight: activeTab === 'groups' ? 'bold' : 'normal',
+              cursor: 'pointer',
+              padding: '10px', // Thêm padding cho từng mục
+              borderRadius: '5px', // Bo góc cho từng mục
+              backgroundColor: activeTab === 'groups' ? '#e0e0e0' : 'transparent', // Màu nền khi được chọn
+            }}
+            onClick={() => setActiveTab('groups')}
+          >
+            Danh sách nhóm
+          </div>
+        </div>
+
+        {/* Nội dung bên phải */}
+        <div style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
+          {activeTab === 'friends' && (
+            <>
+              <h2>Danh sách bạn bè ({friends.length})</h2>
+              <div style={{ marginTop: '20px' }}>
+                {friends.map((friend, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: '15px',
+                      paddingBottom: '10px',
+                      borderBottom: '1px solid #eee',
+                    }}
+                  >
+                    <img
+                      src={friend.avatar}
+                      alt={friend.name}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        marginRight: '10px',
+                      }}
+                    />
+                    <span>{friend.name}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {activeTab === 'groups' && (
+            <>
+              <h2>Danh sách nhóm ({groups.length})</h2>
+              <div style={{ marginTop: '20px' }}>
+                {groups.map((group, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginBottom: '15px',
+                      paddingBottom: '10px',
+                      borderBottom: '1px solid #eee',
+                    }}
+                  >
+                    <img
+                      src={group.avatar}
+                      alt={group.name}
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        marginRight: '10px',
+                      }}
+                    />
+                    <div>
+                      <h3 style={{ margin: 0 }}>{group.name}</h3>
+                      <p style={{ margin: 0, color: '#555' }}>{group.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
-export default FriendPage
+export default FriendPage;
