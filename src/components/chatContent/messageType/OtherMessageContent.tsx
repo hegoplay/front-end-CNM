@@ -62,7 +62,7 @@ const OtherMessageContent: React.FC<OtherMessageContentProps> = ({
     <div className="flex items-start gap-2">
       <AvatarImg imgUrl={userInfo?.baseImg || "/avatar.jpg"} />
       <div className="flex flex-col items-start group">
-        <div className="flex flex-col bg-blue-400 text-white rounded-lg p-3 max-w-2/3">
+        <div className="flex flex-col bg-blue-400 text-white rounded-lg p-3 max-w-2xl">
           {children}
         </div>
         {/* Action buttons, visible on hover */}

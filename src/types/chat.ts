@@ -9,7 +9,7 @@ export enum MessageType {
   TEXT = 'TEXT',
   MEDIA = 'MEDIA',
   FILE = 'FILE',
-  CALL_EVENT = 'CALL_EVENT'
+  CALL = 'CALL'
 }
 
 // Interfaces
@@ -23,7 +23,7 @@ export interface MessageRequest {
   conversationId: string;
   senderId: string;
   content: string; // Text content hoặc media URL
-  type: 'TEXT' | 'MEDIA' | 'FILE' | 'CALL_EVENT';
+  type: 'TEXT' | 'MEDIA' | 'FILE' | 'CALL';
   replyTo?: string; // ID tin nhắn được reply (nullable)
   callEvent?: CallEvent; // Dùng khi type = CALL_EVENT
 }
@@ -33,13 +33,13 @@ export interface MessageResponse {
   conversationId: string;
   senderId: string;
   content: string;
-  type: 'TEXT' | 'MEDIA' | 'FILE' | 'CALL_EVENT';
+  type: 'TEXT' | 'MEDIA' | 'FILE' | 'CALL';
   mediaUrl?: string;
   createdAt: string; // ISO 8601 format
   isRecalled: boolean;
   replyTo?: string;
   reactions?: Reaction[];
-  callEvent?: CallEvent;
+  callId? : string; // ID cuộc gọi (nếu có)
 }
 
 export interface Reaction {
@@ -80,7 +80,7 @@ export interface ConversationDetailDto {
 
 // Type guards
 export function isCallEventMessage(message: MessageResponse): message is MessageResponse & { callEvent: CallEvent } {
-  return message.type === MessageType.CALL_EVENT && !!message.callEvent;
+  return message.type === MessageType.CALL && !!message.type;
 }
 
 // Utility types

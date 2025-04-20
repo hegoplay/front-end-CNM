@@ -7,6 +7,7 @@ import { UserResponseDto } from "@/types/user";
 import { useUser } from "@/context/UserContext";
 import MediaChat from "./MediaChat";
 import FileChat from "./FileChat";
+import CallChat from "./CallChat";
 
 interface MessageListProps {
   messages: MessageResponse[];
@@ -63,8 +64,8 @@ const MessageList: React.FC<MessageListProps> = ({
         return <MediaChat message={message} />;
       case "FILE":
         return <FileChat message={message} />;
-      case "CALL_EVENT":
-        return <span className="text-gray-500">Sự kiện cuộc gọi</span>;
+      case "CALL":
+        return <CallChat message={message} />;
       default:
         return <TextChat message={message} />;
     }

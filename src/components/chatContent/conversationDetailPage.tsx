@@ -8,8 +8,13 @@ import { useOtherUserInfo } from "@/hooks/useOtherUserInfo";
 import MessageList from "./messageType/MessageList";
 import axios from "axios";
 import RightMorePrivateConversation from "./rightmore/RightMoreConversation";
+import CallInvitation from "@/types/callInvitation";
 
-const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
+interface Props extends ConversationDetailDto {
+  pressCall: () => void;
+}
+
+const ConversationDetailPage: React.FC<Props> = ({
   ...props
 }) => {
   const { userInfo } = useUser();
@@ -20,6 +25,7 @@ const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
   const [replyingTo, setReplyingTo] = useState<MessageResponse | null>(null); // Trạng thái tin nhắn đang trả lời
   const [openMore, setOpenMore] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   // Đánh dấu cuộc trò chuyện là đã đọc khi tải trang
   useLayoutEffect(() => {
@@ -159,7 +165,13 @@ const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
     }
   };
 
-  // Xử lý onMoreClick trong MessageList
+  // xử lý cuộc gọi
+  const handleCall = () => {
+    if (!props.id) return;
+
+    props.pressCall();
+    
+  };
 
   if (isLoading) return <Spin />;
   if (error) return <p>Error: {error.message}</p>;
@@ -172,6 +184,7 @@ const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
           otherInfo={otherInfo || undefined}
           openMore={openMore}
           setOpenMore={setOpenMore}
+          handleCall={handleCall}
         />
 
         {/* Khu vực tin nhắn */}
@@ -251,7 +264,7 @@ const ConversationDetailPage: React.FC<ConversationDetailDto> = ({
                   if (e.target.value.length == 0) setMessageText("");
                 }}
                 ref={inputRef}
-                className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 min-h-[40px] max-h-[120px] min-w-[50px] overflow-y-auto"
+                className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 min-w-[50px] overflow-y-auto text-black"
                 onKeyDown={handleKeyPress}
                 placeholder="Nhập tin nhắn..."
                 rows={1}
