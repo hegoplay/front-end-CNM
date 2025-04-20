@@ -10,35 +10,32 @@ interface UserBoxChatProps extends ConversationDto {
 
 const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
   const { userInfo } = useUser();
-  const [otherInfo, setOtherInfo] = React.useState<UserResponseDto | undefined>(
-    undefined
-  );
-  const [unreadCount, setUnreadCount] = useState(props.unreadCount || 0); // Use useState instead of useOptimistic
-
-  useLayoutEffect(() => {
-    const otherPhone = props.participants.find(
-      (participant) => participant !== userInfo?.phoneNumber
-    );
-    fetch(`/api/users/get-info/${otherPhone}`, {
-      method: "GET",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          setOtherInfo(data.message);
-        } else {
-          console.error("Error fetching user info:", data.message);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching user info:", error);
-      });
-  }, [props.participants, userInfo?.phoneNumber]);
+  // const [otherInfo, setOtherInfo] = React.useState<UserResponseDto | undefined>(
+  //   undefined
+  // );
+  // useLayoutEffect(() => {
+  //   const otherPhone = props.participants.find(
+  //     (participant) => participant !== userInfo?.phoneNumber
+  //   );
+  //   fetch(`/api/users/get-info/${otherPhone}`, {
+  //     method: "GET",
+  //   })
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       if (data.success) {
+  //         setOtherInfo(data.message);
+  //       } else {
+  //         console.error("Error fetching user info:", data.message);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching user info:", error);
+  //     });
+  // }, [props.participants, userInfo?.phoneNumber]);
 
   const handleOnPress = useMemo(
     () => async () => {
       // Update unreadCount immediately
-      setUnreadCount(0);
 
       try {
         // Call API to handle backend logic
@@ -49,12 +46,10 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
           console.log("Conversation initialized successfully");
         } else {
           // If API fails, revert the unreadCount
-          setUnreadCount(props.unreadCount || 0);
           console.error("Error initializing conversation:", res.data);
         }
       } catch (error) {
         // Handle API error, revert the unreadCount
-        setUnreadCount(props.unreadCount || 0);
         console.error("Error initializing conversation:", error);
       }
     },
@@ -94,13 +89,13 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
       onClick={handleOnPress}
     >
       <img
-        src={otherInfo?.baseImg || "/avatar.jpg"}
+        src={props.conversationImgUrl || "/avatar.jpg"}
         className="w-10 h-10 rounded-full mr-2"
       />
       <div className="flex-1 flex-col">
         <div className="flex items-center justify-between">
           <span className="text-black">
-            {otherInfo ? otherInfo.name : "Loading..."}
+            {props.conversationName ? props.conversationName : "Loading..."}
           </span>
           <span className="text-sm text-gray-500">{props.updatedAt}</span>
         </div>
@@ -109,9 +104,9 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
             {printLastMessage}
           </span>
           <div className="mx-2">
-            {unreadCount > 0 && (
+            {(props.unreadCount || 0) > 0 && (
               <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
-                {unreadCount}
+                {props.unreadCount}
               </span>
             )}
           </div>

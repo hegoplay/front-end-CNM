@@ -16,10 +16,12 @@ import useSocket from "@/hooks/useSocket";
 import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { useRouter } from "next/navigation";
 import CallInvitation from "@/types/callInvitation";
+import { useUser } from "@/context/UserContext";
 // import { randomUUID } from "crypto";
 
 const ChatApp: React.FC<{ token: string }> = ({ token }) => {
   const router = useRouter();
+  const  {userInfo} = useUser();
 
   console.log("Token client-side:", token);
 
@@ -43,7 +45,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
     currentConversation,
     getConversationsWithUnreadCounts,
     startCall,
-
+    unreadCounts
     // isMounted
   } = useSocket(
     (process.env.NEXT_PUBLIC_SOCKET_URL as string) || "",
@@ -58,10 +60,12 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
     console.log("Call button pressed");
     if (currentConversation) {
       const data = await startCall(currentConversation.id, "VIDEO");
-      router.push(`/call/${data.message}?isInitiator=true`); // Initiator
+      router.push(`/call/${data.message}?userPhone=${userInfo?.phoneNumber}`); // Initiator
     }
   },[currentConversation, router]);
 
+
+  console.log("Unread counts: ", unreadCounts);
   // console.log("Conversations: ", conversations);
   // Handle the case when token is not available
 
@@ -92,7 +96,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
       <Navbar />
       <div className="chat-app">
         <div className="main-content">
-          <div className="flex-1 flex-col h-full w-150 border-gray-300 border-1">
+          <div className="flex-1 flex-col h-full w-150 border-gray-300 border-1 overflow-auto">
             <SearchInfo />
             <div className="flex flex-col gap-2 border-t-1 overflow-y-auto scroll-smooth">
               {conversations.map((conversation) => {
@@ -103,7 +107,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
                   <ConversationBox
                     {...conversation}
                     key={conversation.id}
-                    unreadCount={unreadInfo?.unreadCount || 0}
+                    unreadCount={unreadCounts[conversation.id] || 0}
                   />
                 );
               })}
@@ -119,7 +123,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
                 }
               >
                 <ConversationDetailPage
-                  {...currentConversation}
+                  conversation={currentConversation}
                   pressCall={pressCall}
                 />
               </Suspense>

@@ -10,8 +10,9 @@ import axios from "axios";
 import RightMorePrivateConversation from "./rightmore/RightMoreConversation";
 import CallInvitation from "@/types/callInvitation";
 
-interface Props extends ConversationDetailDto {
+interface Props {
   pressCall: () => void;
+  conversation: ConversationDetailDto;
 }
 
 const ConversationDetailPage: React.FC<Props> = ({
@@ -29,12 +30,12 @@ const ConversationDetailPage: React.FC<Props> = ({
 
   // Đánh dấu cuộc trò chuyện là đã đọc khi tải trang
   useLayoutEffect(() => {
-    if (props.id) {
+    if (props.conversation.id) {
       axios.post("/api/conversations/markAsRead", {
-        conversationId: props.id,
+        conversationId: props.conversation.id,
       });
     }
-  }, [props.id]);
+  }, [props.conversation.id]);
 
   // Kiểm tra nếu không có thông tin người dùng
   if (!userInfo) {
@@ -47,10 +48,10 @@ const ConversationDetailPage: React.FC<Props> = ({
 
   // Lấy số điện thoại của người kia
   const otherPhone = useMemo(() => {
-    return props.participants?.find(
+    return props.conversation.participants?.find(
       (participant) => participant !== userInfo?.phoneNumber
     );
-  }, [props.participants, userInfo?.phoneNumber]);
+  }, [props.conversation.participants, userInfo?.phoneNumber]);
 
   const { data: otherInfo, isLoading, error } = useOtherUserInfo(otherPhone);
 
@@ -100,7 +101,7 @@ const ConversationDetailPage: React.FC<Props> = ({
 
         const requestData = {
           senderId: userInfo?.phoneNumber,
-          conversationId: props.id,
+          conversationId: props.conversation.id,
           type: messageType,
           replyTo: replyingTo?.id, // Thêm replyTo
         };
@@ -130,7 +131,7 @@ const ConversationDetailPage: React.FC<Props> = ({
       } else {
         await axios.post("/api/messages/text", {
           senderId: userInfo.phoneNumber,
-          conversationId: props.id,
+          conversationId: props.conversation.id,
           content: inputRef.current?.value,
           type: "TEXT",
           replyTo: replyingTo?.id, // Thêm replyTo
@@ -167,7 +168,7 @@ const ConversationDetailPage: React.FC<Props> = ({
 
   // xử lý cuộc gọi
   const handleCall = () => {
-    if (!props.id) return;
+    if (!props.conversation.id) return;
 
     props.pressCall();
     
@@ -181,7 +182,7 @@ const ConversationDetailPage: React.FC<Props> = ({
       <div className="flex flex-1 flex-col h-full">
         {/* Header */}
         <ConversationDetailPrivatePageHeader
-          otherInfo={otherInfo || undefined}
+          conversation={props.conversation}
           openMore={openMore}
           setOpenMore={setOpenMore}
           handleCall={handleCall}
@@ -191,7 +192,7 @@ const ConversationDetailPage: React.FC<Props> = ({
         <div className="flex flex-col flex-1 bg-gray-100 overflow-scroll">
           <MessageList
             currentUserPhone={userInfo.phoneNumber}
-            messages={props.messageDetails}
+            messages={props.conversation.messageDetails}
             otherInfo={otherInfo || undefined}
             onReply={handleReply} // Truyền hàm xử lý trả lời
           />
@@ -292,7 +293,7 @@ const ConversationDetailPage: React.FC<Props> = ({
         </div>
       </div>
       {/* Hiển thị thông tin người dùng khác */}
-      {openMore && <RightMorePrivateConversation conversationInfo={props} />}
+      {openMore && <RightMorePrivateConversation conversationInfo={props.conversation} />}
     </div>
   );
 };

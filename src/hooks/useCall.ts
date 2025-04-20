@@ -16,12 +16,14 @@ interface UseCallProps {
   token: string;
 }
 
-interface CallState {
+export interface CallState {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   isConnected: boolean;
   error: string | null;
   callStatus: "connecting" | "connected" | "disconnected" | "failed" | "ended";
+  toggleCamera: () => void;
+  toggleMicrophone: () => void;
 }
 
 const useCall = ({ roomId, url, token, userPhone }: UseCallProps): CallState => {
@@ -40,6 +42,22 @@ const useCall = ({ roomId, url, token, userPhone }: UseCallProps): CallState => 
     setCallStatus("connecting");
   },[]);
   
+  const toggleCamera = () => {
+    if (localStream) {
+      localStream.getVideoTracks().forEach((track) => {
+        track.enabled = !track.enabled;
+      });
+    }
+  }
+
+  const toggleMicrophone = () => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach((track) => {
+        track.enabled = !track.enabled;
+      });
+    }
+  };
+
   useEffect(() => {
     // Chỉ chạy setup nếu component chưa mount
     if (isMounted.current) return;
@@ -85,7 +103,7 @@ const useCall = ({ roomId, url, token, userPhone }: UseCallProps): CallState => 
         stream.getTracks().forEach((track) => {
           peerConnectionRef.current?.addTrack(track, stream);
         });
-
+// sus
         peerConnectionRef.current.ontrack = (event) => {
           const [remote] = event.streams;
           setRemoteStream(remote);
@@ -104,6 +122,27 @@ const useCall = ({ roomId, url, token, userPhone }: UseCallProps): CallState => 
         setError("Failed to initialize WebRTC: " + (err as Error).message);
         setCallStatus("failed");
       }
+    };
+
+    const resetWebRTC = async () => {
+      // Clean up existing connection
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+        peerConnectionRef.current = null;
+      }
+      setCallStatus("connecting");
+      setIsConnected(false);
+      // if (localStream) {
+      //   localStream.getTracks().forEach((track) => track.stop());
+      //   setLocalStream(null);
+      // }
+      // setRemoteStream(null);
+      // setIsConnected(false);
+      // setCallStatus("disconnected");
+      // remoteUsernameRef.current = null;
+  
+      // Reinitialize WebRTC
+      await initWebRTC();
     };
 
     initWebRTC();
@@ -180,13 +219,10 @@ const useCall = ({ roomId, url, token, userPhone }: UseCallProps): CallState => 
       }
     );
 
-    socketRef.current?.on("user_left", () => {
+    socketRef.current?.on("user_left", async () => {
       if (isMounted.current) {
-        setIsConnected(false);
-        setRemoteStream(null);
-        setCallStatus("disconnected");
-        peerConnectionRef.current?.close();
-        socketRef.current?.disconnect();
+        console.log("User left, resetting WebRTC connection");
+        await resetWebRTC();
       }
     });
 
@@ -198,7 +234,7 @@ const useCall = ({ roomId, url, token, userPhone }: UseCallProps): CallState => 
         socketRef.current?.disconnect();
         peerConnectionRef.current?.close();
         localStream?.getTracks().forEach((track) => track.stop());
-        setCallStatus("disconnected");
+        
 
         const managerEntry = managerInstances.get(url);
         if (managerEntry) {
@@ -213,7 +249,7 @@ const useCall = ({ roomId, url, token, userPhone }: UseCallProps): CallState => 
     };
   }, [roomId, userPhone, token, url]);
 
-  return { localStream, remoteStream, isConnected, error, callStatus };
+  return { localStream, remoteStream, isConnected, error, callStatus, toggleCamera, toggleMicrophone }; 
 };
 
 export default useCall;

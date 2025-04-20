@@ -125,7 +125,7 @@ const SearchInfo = () => {
   };
   return (
     <>
-      <div className="flex items-center  p-2 border-gray-300 border-b-1 gap-2">
+      <div className="flex items-center  p-2 border-gray-300 border-b-1 gap-2 overflow-auto">
         {/* cái này sẽ triển khai để quản lý thông tin người dùng */}
 
         <Input

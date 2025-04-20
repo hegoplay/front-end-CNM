@@ -6,34 +6,35 @@ import { FaMagnifyingGlass } from "react-icons/fa6";
 import { IoIosMore } from "react-icons/io";
 import { UserResponseDto } from "@/types/user";
 import ActionButtons from "./navigation/ActionButton";
+import { ConversationDetailDto } from "@/types/chat";
 
 interface Props {
-  otherInfo?: UserResponseDto;
+  conversation: ConversationDetailDto
   openMore?: boolean;
   setOpenMore?: React.Dispatch<React.SetStateAction<boolean>>;
   handleCall?: () => void;
 }
 
 const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
-  otherInfo,
   openMore,
   setOpenMore,
   handleCall,
+  conversation,
 }) => {
-  if (!otherInfo) {
+  if (!conversation) {
     return <div className="flex p-3 border-b-1 border-gray-300 gap-3" />;
   }
 
   return (
     <div className="flex p-3 border-b-1 border-gray-300 gap-3">
       <img
-        src={otherInfo?.baseImg}
+        src={conversation?.conversationImgUrl}
         className="w-12 h-12 rounded-full"
-        alt={otherInfo?.name || "User avatar"}
+        // alt={conversation?.conversationName || "User avatar"}
       />
       <div className="flex flex-1 flex-col justify-around">
-        <span className="text-black font-semibold">{otherInfo?.name}</span>
-        <span className="text-sm text-gray-500">{otherInfo?.status}</span>
+        <span className="text-black font-semibold">{conversation?.conversationName}</span>
+        <span className="text-sm text-gray-500">...</span>
       </div>
       {
         <ActionButtons
