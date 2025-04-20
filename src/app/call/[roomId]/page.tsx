@@ -6,19 +6,18 @@ import React from "react";
 interface CallPageProps {
   params: {
     roomId: string;
+    userPhone: string;
   },
-  query:{
-    isInitiator?: boolean;
-  }
+
 }
 
-const CallPage : React.FC<CallPageProps> = async ({params,query}) => {
+const CallPage : React.FC<CallPageProps> = async (context) => {
   const token = (await cookies()).get("authToken")?.value || "";
-  const temps = await params;
-  const q = await query;
+  const temps = await context.params;
   // isInitiaor lấy trong query params
-  const isInitiator = q?.isInitiator || false;
+  // const isInitiator = q?.isInitiator || false;
   const roomId = decodeURIComponent(temps.roomId);
+  const userPhone = decodeURIComponent(temps.userPhone); 
   // Kiểm tra token hợp lệ trước khi render ChatApp
   if (token == "") {
     return (
@@ -41,7 +40,7 @@ const CallPage : React.FC<CallPageProps> = async ({params,query}) => {
   // console.log("Token:", token);
 
 
-  return <CallApp roomId={roomId} token={token}/>;
+  return <CallApp roomId={roomId} token={token} userPhone={userPhone}/>;
 };
 
 export default CallPage;

@@ -48,7 +48,7 @@ const CallChat: React.FC<CallChatProps> = ({ message }) => {
   const handleClick = () => {
     // Điều hướng đến trang chi tiết cuộc gọi với callId
     // Bạn có thể thay đổi route tùy theo cấu trúc routing của bạn
-    router.push(`/call/${message.callId}?isInitiator=${message.senderId === userInfo?.phoneNumber}`);
+    router.push(`/call/${message.callId}?userPhone=${userInfo?.phoneNumber}`);
   };
 
   // Hiển thị nội dung mô tả cuộc gọi
