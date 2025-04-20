@@ -175,7 +175,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex justify-between items-center h-16 bg-red-50 w-full px-10 gap-4 sticky top-0">
+    <div className="flex justify-between items-center h-16 bg-red-50 w-full px-10 gap-4 sticky top-0 important z-10">
       <div className="flex justify-start items-center">
         <Link href="/">
           <h3 className="text-2xl font-bold text-red-500" style={{margin: 0}}>Zala</h3>

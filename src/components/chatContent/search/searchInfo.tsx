@@ -10,6 +10,9 @@ import { on } from "events";
 import UserInfoBox from "./userInfoBox";
 import { MdOutlineMoreHoriz } from "react-icons/md";
 import { MdOutlineGroupAdd } from "react-icons/md";
+import { useRouter } from "next/navigation";
+import { UserResponseDto } from "@/types/user";
+import { useUser } from "@/context/UserContext";
 
 interface ModalItem {
   title?: string;
@@ -21,11 +24,197 @@ interface ModalItem {
   onCloseFn?: () => void;
 }
 
+interface ModalCreateGroupItem {
+  title?: string;
+  content?: React.ReactNode;
+  submitTitle?: string;
+  cancelTitle?: string;
+  onOkGrFn?: () => void;
+  onCancelGrFn?: () => void;
+  onCloseGrFn?: () => void;
+}
+
 const SearchInfo = () => {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
+  const [openCreateGroup, setOpenCreateGroup] = useState(false);
+  const [indexGr, setIndexGr] = useState(0);
   const [userData, setUserData] = useState<any>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  const [friends, setFriends] = useState<UserResponseDto[]>([]);
+  // const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
+  // const [selectedFriends, setSelectedFriends] = useState([]);
+  const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
+  const [groupName, setGroupName] = useState<string>(""); 
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const previewUrl = selectedImage ? URL.createObjectURL(selectedImage) : null;
+  // có khả năng sẽ bị lỗi trong tương lai
+  const {userInfo} = useUser();
+
+
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const response = await fetch("/api/friends/get-friends-list"); // Thay bằng endpoint API thực tế
+        if (!response.ok) {
+          throw new Error("Failed to fetch friends");
+        }
+        const data = await response.json();
+        console.log(data);
+        setFriends(data.data); // Giả sử API trả về danh sách bạn bè
+        data.data.forEach((friend: UserResponseDto) => {
+          console.log("Số điện thoại:", friend.phoneNumber);
+        });
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+      }
+    };
+
+    fetchFriends();
+  }, []);
+
+  const valuesCreateGroup: ModalCreateGroupItem[] = [
+    {
+      title: "Tạo nhóm",
+      content: (
+        <div>
+          <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <label
+              htmlFor="upload-avatar"
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                border: "1px solid #ddd",
+                backgroundColor: "#f9f9f9",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                overflow: "hidden",
+              }}
+            >
+              {selectedImage ? (
+                <img
+                  src={URL.createObjectURL(selectedImage)}
+                  alt="Selected"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <div>Chưa có ảnh</div>
+              )}
+            </label>
+            <input
+              id="upload-avatar"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setSelectedImage(file); // setSelectedImage sẽ nhận kiểu File
+                }
+              }}
+            />
+
+            <Input
+              type="text"
+              placeholder="Nhập tên nhóm..."
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)} // Cập nhật tên nhóm
+              style={{
+                flex: 1,
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div>
+            <Input
+              type="text"
+              placeholder="Nhập tên, số điện thoại, hoặc danh sách số điện thoại"
+              style={{
+                width: "100%",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #ddd",
+              }}
+            />
+          </div>
+          <div style={{ marginTop: "20px" }}>
+            <h4 style={{ marginBottom: "10px" }}>Danh sách bạn bè</h4>
+            {friends.map((user, index) => (
+              <label
+                key={index}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedFriends.includes(user.name)}
+                  onChange={() =>
+                    setSelectedFriends((prev) =>
+                      prev.includes(user.name)
+                        ? prev.filter((name) => name !== user.name)
+                        : [...prev, user.name]
+                    )
+                  }
+                  style={{ marginRight: "10px" }}
+                />
+                <img
+                  src={user.baseImg}
+                  alt={user.name}
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    marginRight: "10px",
+                  }}
+                />
+                <span>{user.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      ),
+      submitTitle: "Tạo nhóm",
+      cancelTitle: "Hủy",
+      onOkGrFn: () => {
+        // Log tên nhóm khi nhấn "Tạo nhóm"
+        console.log("Tên nhóm:", groupName);
+        message.success("Nhóm đã được tạo thành công!");
+        console.log("Danh sách bạn bè đã chọn:", selectedFriends);
+        console.log("Hình ảnh đã chọn:", selectedImage);
+        const selectedPhoneNumbers = friends
+        .filter((friend) => selectedFriends.includes(friend.name))
+        .map((friend) => friend.phoneNumber);
+        console.log("Danh sách số điện thoại đã chọn:", selectedPhoneNumbers);
+        let formData = new FormData();
+        formData.append("name", groupName);
+        let memberIds = selectedPhoneNumbers.map((phone) => phone.trim());
+        memberIds.push(userInfo?.phoneNumber || ""); // Thêm số điện thoại của người tạo nhóm vào danh sách
+        formData.append("memberIds", JSON.stringify(memberIds));
+        if (selectedImage) {
+          formData.append("baseImg", selectedImage);
+        }
+        const response = fetch("/api/conversations/group", {
+          method: "POST",
+          body: formData,
+        });
+        hideCreateGroupModal();
+      },
+      onCancelGrFn: () => {
+        hideCreateGroupModal();
+      },
+    },
+  ];
   
   const values: ModalItem[] = [
     {
@@ -116,13 +305,28 @@ const SearchInfo = () => {
   const showModal = () => {
     setOpen(true);
   };
-
+  
   const hideModal = () => {
     if (phoneRef.current) {
       phoneRef.current.value = "";
     }
     setOpen(false);
   };
+
+  const showCreateGroupModal = () => {
+    setOpenCreateGroup(true);
+    console.log("showCreateGroupModal");
+  };
+
+  const hideCreateGroupModal = () => {
+    setOpenCreateGroup(false);
+    setSelectedFriend(null);
+    setSelectedFriends([]);
+    setSelectedImage(null);
+  };
+
+
+
   return (
     <>
       <div className="flex items-center  p-2 border-gray-300 border-b-1 gap-2 overflow-auto">
@@ -145,14 +349,20 @@ const SearchInfo = () => {
         />
         <IconButton
           icon={<MdOutlineGroupAdd style={{ fontSize: 20, color: "black" }} />}
-          onClick={() => {}}
+          onClick={() => {
+            // router.push("/groups")
+            showCreateGroupModal();
+            setIndexGr(0);
+          }}
           selected={false}
           className="bg-white hover:bg-gray-200"
           size="sm"
         />
         <IconButton
           icon={<IoPeopleOutline style={{ fontSize: 20, color: "black" }} />}
-          onClick={() => {}}
+          onClick={() => {
+            router.push("/friends");
+          }}
           selected={false}
           className="bg-white hover:bg-gray-200"
           size="sm"
@@ -171,6 +381,20 @@ const SearchInfo = () => {
         footer={index === 1 ? null : undefined}
       >
         {values[index].content}
+      </Modal>
+      
+      <Modal
+        open={openCreateGroup}
+        // onCancel={valuesCreateGroup[indexGr].onCancelGrFn}
+        // onClose={valuesCreateGroup[indexGr].onCloseGrFn}
+        onCancel={hideCreateGroupModal}
+        onClose={hideCreateGroupModal}
+        onOk={valuesCreateGroup[indexGr].onOkGrFn}
+        title={valuesCreateGroup[indexGr].title}
+        okText={valuesCreateGroup[indexGr].submitTitle}
+        cancelText={valuesCreateGroup[indexGr].cancelTitle}
+      >
+        {valuesCreateGroup[indexGr].content}
       </Modal>
     </>
   );
