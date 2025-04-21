@@ -99,6 +99,7 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
           <div className="flex-1 flex-col h-full w-150 border-gray-300 border-1 overflow-auto">
             <SearchInfo />
             <div className="flex flex-col gap-2 border-t-1 overflow-y-auto scroll-smooth">
+              {/* danh sách các cuộc hội thoại */}
               {conversations.map((conversation) => {
                 const unreadInfo = getConversationsWithUnreadCounts().find(
                   (c) => c.conversationId === conversation.id
