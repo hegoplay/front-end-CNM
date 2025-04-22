@@ -1,21 +1,56 @@
 import { ConversationDetailDto } from "@/types/chat";
-import React from "react";
+import React, { useState } from "react";
 import SectionBox from "./SectionBox";
 import AvatarImg from "@/components/AvatarImg";
 import styles from "./RightMoreConversation.module.css";
 import ExtendWrapper from "../ExtendWrapper";
 import { Button } from "antd";
+import { FaEdit, FaSave } from "react-icons/fa"; 
+import { UserResponseDto } from "@/types/user";
 
 interface Props {
   conversationInfo: ConversationDetailDto;
 }
-
+ 
 const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
   const [showMedia, setShowMedia] = React.useState(false);
   const [showFiles, setShowFiles] = React.useState(false);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState("");
+  const [friends, setFriends] = useState<UserResponseDto[]>([]);
+  const [conversationName, setConversationName] = React.useState(conversationInfo.conversationName);
+  const [isEditing, setIsEditing] = React.useState(false); // Trạng thái chỉnh sửa
+  const [editedName, setEditedName] = React.useState(conversationInfo.conversationName); // Tên đã chỉnh sửa
 
+  const handleSaveName = () => {
+    setIsEditing(true); // Tắt chế độ chỉnh sửa
+    
+    // Gửi PUT request để lưu tên mới
+    fetch(`/api/conversations/${conversationInfo.id}/name`, {
+      method: 'PUT', // Đảm bảo dùng PUT thay vì POST
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        conversationId: conversationInfo.id,
+        editedName: editedName,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to update conversation name');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Tên cuộc hội thoại đã được cập nhật:', data);
+        setConversationName(editedName);  // Cập nhật tên trong UI
+      })
+      .catch((error) => {
+        console.error('Lỗi khi cập nhật tên cuộc hội thoại:', error);
+      });
+  };
+  
   // Hàm kiểm tra URL có phải là video dựa vào phần mở rộng
   const isVideo = (url: string) => {
     const videoExtensions = [".mp4", ".mov", ".avi", ".mkv", ".webm"];
@@ -51,7 +86,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
               : "Thông tin nhóm"}
           </p>
         </SectionBox>
-        <SectionBox className="items-center">
+        {/* <SectionBox className="items-center">
           <>
             <AvatarImg
               imgUrl={conversationInfo.conversationImgUrl || "/avatar.jpg"}
@@ -59,6 +94,37 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
             <span className="font-bold text-sm">
               {conversationInfo.conversationName}
             </span>
+          </>
+        </SectionBox> */}
+        <SectionBox className="items-center">
+          <>
+            <AvatarImg
+              imgUrl={conversationInfo.conversationImgUrl || "/avatar.jpg"}
+            />
+            <div className="flex items-center gap-2">
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)} // Cập nhật tên mới
+                  className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
+                  autoFocus
+                />
+              ) : (
+                <span className="font-bold text-sm">{conversationInfo.conversationName}</span>
+              )}
+              <button
+                onClick={() => {
+                  if (isEditing) {
+                    handleSaveName(); // Gọi hàm lưu tên mới khi nhấn nút
+                  }
+                  setIsEditing(!isEditing); // Bật/tắt chế độ chỉnh sửa
+                }}
+                className="text-blue-500 hover:text-blue-700"
+              >
+                {isEditing ? <FaSave /> : <FaEdit />} {/* Hiển thị icon */}
+              </button>
+            </div>
           </>
         </SectionBox>
         {/* show media */}

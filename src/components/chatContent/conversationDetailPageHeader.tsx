@@ -43,7 +43,8 @@ const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
               setOpenMore((prev) => !prev);
             }
           }}
-          onVideoCallClick={handleCall}
+        
+          onVideoCallClick={conversation.type === "PRIVATE" ? handleCall : undefined}
         />
       }
     </div>
