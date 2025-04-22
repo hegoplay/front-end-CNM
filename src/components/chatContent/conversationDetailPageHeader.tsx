@@ -82,6 +82,7 @@ const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
             setShowUpdate(true);
           }}
           type={conversation.type}
+          isAdmin = {conversation.admins?.some((admin) => admin === userInfo?.phoneNumber) || false}
         />
       }
       <Modal

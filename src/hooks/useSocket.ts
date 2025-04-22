@@ -304,6 +304,7 @@ const useSocket = (
         conversations: prev.conversations.filter(
           (conv) => conv.id !== conversationId
         ),
+        currentConversation: undefined,
       }));
     };
     // Xử lý call_invitation

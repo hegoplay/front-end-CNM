@@ -374,7 +374,7 @@ const SearchInfo = () => {
           className="bg-white hover:bg-gray-200"
           size="sm"
         />
-        <IconButton
+        {/* <IconButton
           icon={<IoPeopleOutline style={{ fontSize: 20, color: "black" }} />}
           onClick={() => {
             router.push("/friends");
@@ -382,7 +382,7 @@ const SearchInfo = () => {
           selected={false}
           className="bg-white hover:bg-gray-200"
           size="sm"
-        />
+        /> */}
       </div>
       {/* Modal */}
       <Modal

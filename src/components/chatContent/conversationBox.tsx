@@ -1,5 +1,5 @@
 import { useUser } from "@/context/UserContext";
-import { ConversationDto } from "@/types/chat";
+import { ConversationDto, ConversationType } from "@/types/chat";
 import { UserResponseDto } from "@/types/user";
 import React, { useLayoutEffect, useMemo, useState } from "react";
 import axios from "axios";
@@ -96,6 +96,10 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
         <div className="flex items-center justify-between">
           <span className="text-black">
             {props.conversationName ? props.conversationName : "Loading..."}
+            {props.type === ConversationType.GROUP && (
+              <span className="text-sm text-gray-500 ml-2 bg-gray-100 px-2 py-1 rounded-full">
+                group
+                </span>)}
           </span>
           <span className="text-sm text-gray-500">{props.updatedAt}</span>
         </div>
