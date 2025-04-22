@@ -144,22 +144,25 @@ const useSocket = (
             ],
           },
           // update on new message
-          messages: [...prev.messages, message],
+          messages: [message, ...prev.messages],
           unreadCounts: {
             ...prev.unreadCounts,
             [message.conversationId]: 0,
           },
-          conversations: prev.conversations.map((conv) => {
-            if (conv.id === message.conversationId) {
-              return {
-                ...conv,
-                lastMessage: message,
-                unreadCount: 0,
-                updatedAt: message.createdAt,
-              };
-            }
-            return conv;
-          }),
+          conversations: [
+            {
+              ...prev.conversations.find(
+                (conv) => conv.id === message.conversationId
+              ),
+              
+              lastMessage: message,
+              updatedAt: message.createdAt,
+
+            },
+            ...prev.conversations.filter(
+              (conv) => conv.id !== message.conversationId
+            ),
+          ]
         };
       });
     };

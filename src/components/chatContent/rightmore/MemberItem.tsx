@@ -48,15 +48,18 @@ const MemberItem: React.FC<Props> = ({ ...props }) => {
         // console.log("Người dùng đã xác nhận!");
         // Thêm mã xử lý, ví dụ gọi API, cập nhật UI, v.v.
         console.log(props.phoneNumber);
-        const response = await fetch(`/api/conversations/${props.conversationId}/delete-member`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            phoneNumber: props.phoneNumber,
-          }),
-        });
+        const response = await fetch(
+          `/api/conversations/${props.conversationId}/delete-member`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              phoneNumber: props.phoneNumber,
+            }),
+          }
+        );
         if (response.status === 200) {
           message.success("Người dùng đã bị xóa khỏi phòng!");
         } else {
@@ -70,11 +73,60 @@ const MemberItem: React.FC<Props> = ({ ...props }) => {
     }
   };
 
+  const handleToggleAdminOperation = async () => {
+    // xử lý người dùng muốn thêm admin
+    if (props.role === "leader") {
+      const isConfirmed = window.confirm(
+        props.isAdmin
+          ? "Bạn có muốn xóa thành viên này khỏi danh sách admin không ?"
+          : "Bạn có muốn thêm thành viên này làm admin không?"
+      );
+
+      if (isConfirmed) {
+        // console.log("Người dùng đã xác nhận!");
+        // Thêm mã xử lý, ví dụ gọi API, cập nhật UI, v.v.
+        console.log(props.phoneNumber);
+        const response = await fetch(
+          `/api/conversations/${props.conversationId}/admin`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              targetUserId: props.phoneNumber,
+              isAdmin: !props.isAdmin,
+            }),
+          }
+        );
+        if (response.status === 200) {
+          message.success("Người dùng đã được thêm admin!");
+        } else {
+          const json = await response.json();
+          console.error("Error adding user:", json);
+          message.error(json.message);
+        }
+      } else {
+        message.info("Người dùng đã hủy!");
+      }
+    }
+  };
+
   const adminButton = () =>
     props.isAdmin ? (
-      <FaMinus className="text-red-500 cursor-pointer hover:text-red-700 transition-all duration-200" />
+      <FaMinus
+        className="text-red-500 cursor-pointer hover:text-red-700 transition-all duration-200"
+        onClick={() => {
+          handleToggleAdminOperation();
+        }}
+      />
     ) : (
-      <FaPlus className="text-green-500 cursor-pointer hover:text-green-700 transition-all duration-200" />
+      <FaPlus
+        className="text-green-500 cursor-pointer hover:text-green-700 transition-all duration-200"
+        onClick={() => {
+          handleToggleAdminOperation();
+        }}
+      />
     );
 
   return (
@@ -92,7 +144,7 @@ const MemberItem: React.FC<Props> = ({ ...props }) => {
         {memberTitle()}
       </div>
 
-      {props.role === "admin" && !props.isAdmin && adminButton()}
+      {props.role === "leader" && !props.isLeader && adminButton()}
 
       {(props.role === "admin" ||
         props.role === "leader" ||

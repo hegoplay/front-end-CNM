@@ -193,7 +193,10 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
             <span className="font-bold text-sm">
               {conversationInfo.conversationName}
             </span>
-            <span className="text-sm w-full">Invite link: </span>
+            {
+              conversationInfo.type === ConversationType.GROUP &&
+              <span className="text-sm w-full">Invite link: </span>
+            }
           </>
         </SectionBox>
         {/* show danh sách thành viên */}
@@ -222,7 +225,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
                   <MemberItem
                     key={member.phoneNumber}
                     {...member}
-                    role={userMember?.isAdmin ? "admin" : (userMember?.isLeader ? "leader" : "member")}
+                    role={userMember?.isLeader ? "leader" : (userMember?.isAdmin ? "admin" : "member")}
                     handleLeaveRoom={handleLeaveRoom}
                     conversationId={conversationInfo.id}
                   />
@@ -372,7 +375,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
                 className="w-full"
                 onClick={handleDeleteConversation}
               >
-                Xóa cuộc hội thoại
+                Giải tán nhóm
               </Button>
             </SectionBox>
           )}
@@ -380,13 +383,16 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
         
       </>
     </ExtendWrapper>
-    <LeaveRoomModel
-      conversationInfo={conversationInfo}
-      userMember={userMember}
-      leaveRoomCallback={leaveRoomAPI}
-      isShowLeaderModal={isShowLeaderModal}
-      setIsShowLeaderModal={setIsShowLeaderModal}
-    />
+    {
+      conversationInfo.type === ConversationType.GROUP &&
+      <LeaveRoomModel
+        conversationInfo={conversationInfo}
+        userMember={userMember}
+        leaveRoomCallback={leaveRoomAPI}
+        isShowLeaderModal={isShowLeaderModal}
+        setIsShowLeaderModal={setIsShowLeaderModal}
+      />
+    }
     </>
     
   );
