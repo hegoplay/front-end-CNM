@@ -30,6 +30,7 @@ export default async function handler(
     }
 
     const data = await response.json();
+    console.log("Friend lists data: ", data);
     // const data = await response.json();
     return res.status(200).json({success: true, data: data});
   } catch (error) {
