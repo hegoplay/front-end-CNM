@@ -10,6 +10,7 @@ import {
   MessageRequest,
   MessageType,
   Reaction,
+  mapConversationDetailDtoToConversationDto,
 } from "../types/chat";
 import CallInvitation from "@/types/callInvitation";
 // const { localStream, remoteStream, isConnected, error, callStatus } = useCall(
@@ -287,9 +288,10 @@ const useSocket = (
       }));
     };
     const onNewConversation = (conversation: ConversationDto) => {
+      console.log("Received new_conversation event:", conversation);
       setState((prev) => ({
         ...prev,
-        conversations: [...prev.conversations, conversation],
+        conversations: [conversation, ...prev.conversations ],
       }));
     };
     const onDeleteConversation = (conversationId: string) => {
@@ -316,6 +318,28 @@ const useSocket = (
       }))
     };
 
+    const onConversationUpdate = (conversation: ConversationDetailDto) => {
+      console.log("Received conversation_update event:", conversation);
+      setState((prev) => ({
+        ...prev,
+        conversations: [
+          {
+            ...mapConversationDetailDtoToConversationDto(conversation),
+            unreadCount: prev.unreadCounts[conversation.id] || 0,
+            
+          },
+          ...prev.conversations.filter((conv) => conv.id !== conversation.id),
+        ],
+        currentConversation:
+          prev.currentConversation?.id === conversation.id
+            ? {
+                ...prev.currentConversation,
+                ...conversation,
+              }
+            : prev.currentConversation,
+      }));
+    }
+
     socketInstance.on("connect", onConnect);
     socketInstance.on("disconnect", onDisconnect);
     socketInstance.on("error", onError);
@@ -329,6 +353,8 @@ const useSocket = (
     socketInstance.on("new_conversation", onNewConversation);
     socketInstance.on("delete_conversation", onDeleteConversation);
     socketInstance.on("clear_conversation", onClearConversation);
+    socketInstance.on("conversation_update",onConversationUpdate);
+    
     if(options?.onCallInvitation) {
       socketInstance.on("call_invitation", options.onCallInvitation); // Thêm sự kiện call_invitation
     }
@@ -362,6 +388,7 @@ const useSocket = (
       socket.off("new_conversation");
       socket.off("delete_conversation");
       socket.off("call_invitation");
+      socket.off("conversation_update");
       socket.off("call_error");
       socket.off("clear_conversation");
       socket.disconnect();
@@ -423,6 +450,8 @@ const useSocket = (
     }),
     [getConversationsWithUnreadCounts, startCall]
   );
+
+
 
   return {
     ...state,

@@ -6,7 +6,7 @@ import { FaMagnifyingGlass } from "react-icons/fa6";
 import { IoIosMore } from "react-icons/io";
 import { UserResponseDto } from "@/types/user";
 import ActionButtons from "./navigation/ActionButton";
-import { ConversationDetailDto } from "@/types/chat";
+import { ConversationDetailDto, ConversationType } from "@/types/chat";
 
 interface Props {
   conversation: ConversationDetailDto
@@ -43,8 +43,8 @@ const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
               setOpenMore((prev) => !prev);
             }
           }}
-        
-          onVideoCallClick={conversation.type === "PRIVATE" ? handleCall : undefined}
+          onVideoCallClick={handleCall}
+          type={conversation.type}
         />
       }
     </div>

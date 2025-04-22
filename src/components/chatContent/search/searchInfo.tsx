@@ -203,10 +203,9 @@ const SearchInfo = () => {
       ),
       submitTitle: "Tạo nhóm",
       cancelTitle: "Hủy",
-      onOkGrFn: () => {
+      onOkGrFn: async () => {
         // Log tên nhóm khi nhấn "Tạo nhóm"
         console.log("Tên nhóm:", groupName);
-        message.success("Nhóm đã được tạo thành công!");
         console.log("Danh sách bạn bè đã chọn:", selectedFriends);
         console.log("Hình ảnh đã chọn:", selectedImage);
         console.log("Danh sách số điện thoại đã chọn:", selectedFriends);
@@ -218,10 +217,15 @@ const SearchInfo = () => {
         if (selectedImage) {
           formData.append("baseImg", selectedImage);
         }
-        const response = fetch("/api/conversations/group", {
+        const response = await fetch("/api/conversations/group", {
           method: "POST",
           body: formData,
         });
+        if(!response.ok) {
+          message.error("Tạo nhóm không thành công");
+          return;
+        }
+        message.success("Nhóm đã được tạo thành công!");
         hideCreateGroupModal();
       },
       onCancelGrFn: () => {

@@ -240,9 +240,8 @@ const Navbar = () => {
                 body: JSON.stringify({}),
               });
               if (response.ok) {
-                message.success("Đăng xuất thành công");
+                await message.success("Đăng xuất thành công");
                 logout();
-                router.push("/login");
               } else {
                 message.error("Đăng xuất thất bại");
               }

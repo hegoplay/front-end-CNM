@@ -47,10 +47,20 @@ export interface Reaction {
   users: string[];
 }
 
+export interface MemberDto{
+  phoneNumber: string;
+  name: string;
+  isAdmin: boolean;
+  isLeader: boolean;
+  baseImg: string;
+  isOnline: boolean;
+}
+
 export interface ConversationDto {
   id: string;
   type: ConversationType;
   participants: string[];
+  
   messages: string[]; // message IDs
   updatedAt: string; // ISO 8601 format
   callInProgress: boolean;
@@ -68,6 +78,7 @@ export interface ConversationDetailDto {
   id: string;
   type: ConversationType;
   participants: string[];
+  participantsDetails: MemberDto[];
   messageDetails: MessageResponse[]; // Full message objects
   updateAt: string; // ISO 8601 format
   callInProgress: boolean;
@@ -77,6 +88,22 @@ export interface ConversationDetailDto {
   admins?: string[];
   conversationImgUrl?: string;
 }
+
+export const mapConversationDetailDtoToConversationDto = (conversationDetail: ConversationDetailDto): ConversationDto => {
+  return {
+    id: conversationDetail.id,
+    type: conversationDetail.type,
+    participants: conversationDetail.participants,
+    messages: conversationDetail.messageDetails.map(message => message.id),
+    updatedAt: conversationDetail.updateAt,
+    callInProgress: conversationDetail.callInProgress,
+    currentCallId: conversationDetail.currentCallId,
+    conversationName: conversationDetail.conversationName,
+    leader: conversationDetail.leader,
+    admins: conversationDetail.admins,
+    lastMessage: conversationDetail.messageDetails[conversationDetail.messageDetails.length - 1],
+    conversationImgUrl: conversationDetail.conversationImgUrl,
+  }};
 
 // Type guards
 export function isCallEventMessage(message: MessageResponse): message is MessageResponse & { callEvent: CallEvent } {
