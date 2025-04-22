@@ -5,12 +5,14 @@ import { FaMagnifyingGlass } from 'react-icons/fa6';
 import { IoIosMore } from "react-icons/io";
 import { UserResponseDto } from '@/types/user';
 import IconButton from '@/components/IconButton';
+import { ConversationType } from '@/types/chat';
 
 interface ActionButtonsProps {
   onAddPersonClick?: () => void;
   onVideoCallClick?: () => void;
   onSearchClick?: () => void;
   onMoreClick?: () => void;
+  type?: ConversationType;
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({
@@ -18,6 +20,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
   onVideoCallClick = () => {},
   onSearchClick = () => {},
   onMoreClick = () => {},
+  type = ConversationType.PRIVATE,
 }) => {
   const buttons = useMemo(
     () => (
@@ -29,6 +32,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           className="bg-white hover:bg-gray-200"
           size="sm"
         />
+        { type === ConversationType.PRIVATE &&
         <IconButton
           icon={<CiVideoOn style={{ fontSize: 20, color: "black" }} />}
           onClick={onVideoCallClick}
@@ -36,6 +40,7 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({
           className="bg-white hover:bg-gray-200"
           size="sm"
         />
+        }
         <IconButton
           icon={<FaMagnifyingGlass style={{ fontSize: 20, color: "black" }} />}
           onClick={onSearchClick}

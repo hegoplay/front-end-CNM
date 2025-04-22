@@ -5,6 +5,7 @@ const MediaChat: React.FC<{ message: MessageResponse }> = ({ message }) => {
   // Hàm kiểm tra loại file dựa trên mediaUrl hoặc content
   const isImage = (url: string) => /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(url);
   const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)$/i.test(url);
+  const isAudio = (url: string) => /\.(mp3|wav|ogg)$/i.test(url);
 
   // URL của media
   const mediaUrl = message.mediaUrl || message.content;
@@ -34,6 +35,18 @@ const MediaChat: React.FC<{ message: MessageResponse }> = ({ message }) => {
       >
         Your browser does not support the video tag.
       </video>
+    );
+  }
+
+  if (isAudio(mediaUrl)) {
+    return (
+      <audio
+        src={mediaUrl}
+        controls
+        className="max-w-xs"
+      >
+        Your browser does not support the audio tag.
+      </audio>
     );
   }
 

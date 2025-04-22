@@ -47,12 +47,11 @@ const SearchInfo = () => {
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   // const [selectedFriends, setSelectedFriends] = useState([]);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
-  const [groupName, setGroupName] = useState<string>(""); 
+  const [groupName, setGroupName] = useState<string>("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const previewUrl = selectedImage ? URL.createObjectURL(selectedImage) : null;
   // có khả năng sẽ bị lỗi trong tương lai
-  const {userInfo} = useUser();
-
+  const { userInfo } = useUser();
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -64,6 +63,12 @@ const SearchInfo = () => {
         const data = await response.json();
         console.log(data);
         setFriends(data.data); // Giả sử API trả về danh sách bạn bè
+
+        if (friends.length === 0) {
+          console.log("Không có bạn bè nào");
+          return;
+        }
+
         data.data.forEach((friend: UserResponseDto) => {
           console.log("Số điện thoại:", friend.phoneNumber);
         });
@@ -80,7 +85,14 @@ const SearchInfo = () => {
       title: "Tạo nhóm",
       content: (
         <div>
-          <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div
+            style={{
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
             <label
               htmlFor="upload-avatar"
               style={{
@@ -146,68 +158,74 @@ const SearchInfo = () => {
           </div>
           <div style={{ marginTop: "20px" }}>
             <h4 style={{ marginBottom: "10px" }}>Danh sách bạn bè</h4>
-            {friends.map((user, index) => (
-              <label
-                key={index}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "10px",
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedFriends.includes(user.name)}
-                  onChange={() =>
-                    setSelectedFriends((prev) =>
-                      prev.includes(user.name)
-                        ? prev.filter((name) => name !== user.name)
-                        : [...prev, user.name]
-                    )
-                  }
-                  style={{ marginRight: "10px" }}
-                />
-                <img
-                  src={user.baseImg}
-                  alt={user.name}
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    marginRight: "10px",
-                  }}
-                />
-                <span>{user.name}</span>
-              </label>
-            ))}
+
+            {friends.length > 0 &&
+              friends.map((user, index) => {
+                if (!user) return null; // Kiểm tra nếu user không tồn tại
+                return (
+                  <label
+                    key={index}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "10px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedFriends.includes(user.phoneNumber)}
+                      onChange={() =>
+                        setSelectedFriends((prev) =>
+                          prev.includes(user.phoneNumber)
+                            ? prev.filter((phoneNumber) => phoneNumber !== user.phoneNumber)
+                            : [...prev, user.phoneNumber]
+                        )
+                      }
+                      style={{ marginRight: "10px" }}
+                    />
+                    <img
+                      src={user.baseImg}
+                      alt={user.name}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        marginRight: "10px",
+                      }}
+                    />
+                    <span>{user.name}</span>
+                  </label>
+                );
+              })}
           </div>
         </div>
       ),
       submitTitle: "Tạo nhóm",
       cancelTitle: "Hủy",
-      onOkGrFn: () => {
+      onOkGrFn: async () => {
         // Log tên nhóm khi nhấn "Tạo nhóm"
         console.log("Tên nhóm:", groupName);
-        message.success("Nhóm đã được tạo thành công!");
         console.log("Danh sách bạn bè đã chọn:", selectedFriends);
         console.log("Hình ảnh đã chọn:", selectedImage);
-        const selectedPhoneNumbers = friends
-        .filter((friend) => selectedFriends.includes(friend.name))
-        .map((friend) => friend.phoneNumber);
-        console.log("Danh sách số điện thoại đã chọn:", selectedPhoneNumbers);
+        console.log("Danh sách số điện thoại đã chọn:", selectedFriends);
         let formData = new FormData();
         formData.append("name", groupName);
-        let memberIds = selectedPhoneNumbers.map((phone) => phone.trim());
+        let memberIds = selectedFriends.map((phone) => phone.trim());
         memberIds.push(userInfo?.phoneNumber || ""); // Thêm số điện thoại của người tạo nhóm vào danh sách
         formData.append("memberIds", JSON.stringify(memberIds));
         if (selectedImage) {
           formData.append("baseImg", selectedImage);
         }
-        const response = fetch("/api/conversations/group", {
+        const response = await fetch("/api/conversations/group", {
           method: "POST",
           body: formData,
         });
+        if(!response.ok) {
+          message.error("Tạo nhóm không thành công");
+          return;
+        }
+        message.success("Nhóm đã được tạo thành công!");
         hideCreateGroupModal();
       },
       onCancelGrFn: () => {
@@ -215,7 +233,7 @@ const SearchInfo = () => {
       },
     },
   ];
-  
+
   const values: ModalItem[] = [
     {
       title: "Thêm bạn",
@@ -305,7 +323,7 @@ const SearchInfo = () => {
   const showModal = () => {
     setOpen(true);
   };
-  
+
   const hideModal = () => {
     if (phoneRef.current) {
       phoneRef.current.value = "";
@@ -324,8 +342,6 @@ const SearchInfo = () => {
     setSelectedFriends([]);
     setSelectedImage(null);
   };
-
-
 
   return (
     <>
@@ -382,7 +398,7 @@ const SearchInfo = () => {
       >
         {values[index].content}
       </Modal>
-      
+
       <Modal
         open={openCreateGroup}
         // onCancel={valuesCreateGroup[indexGr].onCancelGrFn}

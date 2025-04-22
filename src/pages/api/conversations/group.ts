@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable, { Fields, Files, File } from "formidable";
 import { UserResponseDto, UserUpdateRequest } from "@/types/user";
 import fs from "fs";
+import { ConversationDetailDto } from "@/types/chat";
+import { BasicResponse } from "@/types/utils";
 
 export const config = {
   api: {
@@ -12,7 +14,7 @@ export const config = {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<UserResponseDto | { success: boolean; message: string }>
+  res: NextApiResponse<BasicResponse>
 ): Promise<void> {
   if (req.method !== "POST") {
     return res.status(405).json({
@@ -89,11 +91,14 @@ export default async function handler(
       throw new Error(`Backend API responded with status ${backendResponse.status}`);
     }
 
-    const data: UserResponseDto = await backendResponse.json();
+    // console.log("Backend Response:", backendResponse);
+
+    // const data: any = await backendResponse.json();
+    // console.log("Backend Response:", data);
     return res.status(200).json({
       success: true,
       message: "User updated successfully",
-      ...data,
+      // data: data,
     });
   } catch (error) {
     console.error("User Update Error:", error);
