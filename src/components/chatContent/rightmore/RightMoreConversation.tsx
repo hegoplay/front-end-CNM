@@ -12,6 +12,7 @@ import { Button, message, Modal, Select } from "antd";
 import { useUser } from "@/context/UserContext";
 import MemberItem from "./MemberItem";
 import LeaveRoomModel from "./LeaveRoomModel";
+import { FaSave, FaEdit } from "react-icons/fa";
 
 interface Props {
   conversationInfo: ConversationDetailDto;
@@ -31,6 +32,38 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
   const [selectedImage, setSelectedImage] = React.useState("");
   const [userMember, setUserMember] = React.useState<MemberDto | null>(null);
   const [isShowLeaderModal, setIsShowLeaderModal] = React.useState(false);
+  const [conversationName, setConversationName] = React.useState(conversationInfo.conversationName);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editedName, setEditedName] = React.useState(conversationInfo.conversationName); 
+
+  const handleSaveName = () => {
+    setIsEditing(true); // Tắt chế độ chỉnh sửa
+    
+    // Gửi PUT request để lưu tên mới
+    fetch(`/api/conversations/${conversationInfo.id}/name`, {
+      method: 'PUT', // Đảm bảo dùng PUT thay vì POST
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        conversationId: conversationInfo.id,
+        editedName: editedName,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to update conversation name');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log('Tên cuộc hội thoại đã được cập nhật:', data);
+        setConversationName(editedName);  // Cập nhật tên trong UI
+      })
+      .catch((error) => {
+        console.error('Lỗi khi cập nhật tên cuộc hội thoại:', error);
+      });
+  };
 
 
   const { userInfo } = useUser();
@@ -185,7 +218,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
               : "Thông tin nhóm"}
           </p>
         </SectionBox>
-        <SectionBox className="items-center flex flex-col gap-3">
+        {/* <SectionBox className="items-center flex flex-col gap-3">
           <>
             <AvatarImg
               imgUrl={conversationInfo.conversationImgUrl || "/avatar.jpg"}
@@ -197,6 +230,40 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
               conversationInfo.type === ConversationType.GROUP &&
               <span className="text-sm w-full">Invite link: </span>
             }
+          </>
+        </SectionBox> */}
+        <SectionBox className="items-center flex flex-col gap-3">
+          <>
+            <AvatarImg
+              imgUrl={conversationInfo.conversationImgUrl || "/avatar.jpg"}
+            />
+            <div className="flex items-center gap-2">
+              {isEditing ? (
+                <input
+                  type="text"
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)} // Cập nhật tên mới
+                  className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
+                  autoFocus
+                />
+              ) : (
+                <>
+                  <span className="font-bold text-sm">{conversationInfo.conversationName}</span>
+                  <span className="text-sm w-full">Invite link: </span>
+                </>
+              )}
+              <button
+                onClick={() => {
+                  if (isEditing) {
+                    handleSaveName(); // Gọi hàm lưu tên mới khi nhấn nút
+                  }
+                  setIsEditing(!isEditing); // Bật/tắt chế độ chỉnh sửa
+                }}
+                className="text-blue-500 hover:text-blue-700"
+              >
+                {isEditing ? <FaSave /> : <FaEdit />} {/* Hiển thị icon */}
+              </button>
+            </div>
           </>
         </SectionBox>
         {/* show danh sách thành viên */}
