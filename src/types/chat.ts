@@ -69,7 +69,7 @@ export interface ConversationDto {
   conversationName?: string;
   leader?: string;
   admins?: string[];
-  lastMessage: MessageResponse;
+  lastMessage: MessageResponse | undefined; // Last message object
   conversationImgUrl?: string;
   unreadCount?: number;
 }
@@ -94,14 +94,14 @@ export const mapConversationDetailDtoToConversationDto = (conversationDetail: Co
     id: conversationDetail.id,
     type: conversationDetail.type,
     participants: conversationDetail.participants,
-    messages: conversationDetail.messageDetails.map(message => message.id),
+    messages: conversationDetail.messageDetails ? conversationDetail.messageDetails.map(message => message.id) : [],
     updatedAt: conversationDetail.updateAt,
     callInProgress: conversationDetail.callInProgress,
     currentCallId: conversationDetail.currentCallId,
     conversationName: conversationDetail.conversationName,
     leader: conversationDetail.leader,
     admins: conversationDetail.admins,
-    lastMessage: conversationDetail.messageDetails[conversationDetail.messageDetails.length - 1],
+    lastMessage: conversationDetail.messageDetails ? conversationDetail.messageDetails[conversationDetail.messageDetails.length - 1] : undefined,
     conversationImgUrl: conversationDetail.conversationImgUrl,
   }};
 

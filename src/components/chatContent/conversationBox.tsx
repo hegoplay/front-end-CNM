@@ -69,16 +69,11 @@ const ConversationBox: React.FC<UserBoxChatProps> = ({ ...props }) => {
     if (isMedia) {
       label = label + "Đã gửi một tệp đính kèm";
     } else if (isText) {
-      label = label + props.lastMessage.content;
+      label = label + props.lastMessage?.content || "hãy bắt đầu cuộc hội thoại";
     } else {
       label = label + "Đã tạo Cuộc gọi";
     }
-
-    if (props.lastMessage) {
-      return label;
-    } else {
-      return "hãy bắt đầu cuộc hội thoại";
-    }
+    return label;
   }, [props.lastMessage]);
 
   return (

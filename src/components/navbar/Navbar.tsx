@@ -19,7 +19,6 @@ interface FriendRequest {
 }
 
 const Navbar = () => {
-  
   const router = useRouter();
   const { token } = useToken();
   const { logout, userInfo } = useUser();
@@ -214,7 +213,22 @@ const Navbar = () => {
               )}
               <Divider style={{ margin: 0 }} />
               <Space style={{ padding: 8 }}>
-                <Button danger type="link">
+                <Button danger type="link"
+                  onClick={async () => {
+                    const response = await fetch(`/api/users/delete/${userInfo?.phoneNumber}`, {
+                      method: "DELETE",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({}),
+                    });
+                    if (response.ok) {
+                      await message.success("Xóa tài khoản thành công");
+                      logout();
+                    } else {
+                      message.error("Xóa tài khoản thất bại");
+                    }
+                  }}>
                   Xóa tài khoản
                 </Button>
               </Space>

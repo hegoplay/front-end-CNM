@@ -13,12 +13,14 @@ import { useUser } from "@/context/UserContext";
 import MemberItem from "./MemberItem";
 import LeaveRoomModel from "./LeaveRoomModel";
 import { FaSave, FaEdit } from "react-icons/fa";
+import { useFindUser } from "@/context/FindUserModelContext";
 
 interface Props {
   conversationInfo: ConversationDetailDto;
 }
 
 const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
+  const {setModelOpen, userPhoneRef} = useFindUser();
   const [showMedia, setShowMedia] = React.useState(false);
   const [showFiles, setShowFiles] = React.useState(false);
   const [showMembers, setShowMembers] = React.useState(false);
@@ -72,6 +74,11 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
     const videoExtensions = [".mp4", ".mov", ".avi", ".mkv", ".webm"];
     return videoExtensions.some((ext) => url.toLowerCase().endsWith(ext));
   };
+
+  const isAudio = (url: string) => {  
+    const audioExtensions = [".mp3", ".wav", ".ogg"];
+    return audioExtensions.some((ext) => url.toLowerCase().endsWith(ext));
+  }
 
   const handleClearConversation = () => {
     // Gọi API để xóa nội dung cuộc hội thoại
@@ -226,6 +233,47 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
     }
   };
 
+  const openFindUserModal = () =>{
+    // console.log("open modal");
+    if (userPhoneRef.current) {
+      userPhoneRef.current.value = conversationInfo.participants[0] === userInfo?.phoneNumber ? conversationInfo.participants[1] : conversationInfo.participants[0];
+    }
+    setModelOpen(true);
+  }
+
+  // quyết định xem nội dung rightmore của media được show như thế nào ?
+  const showMediaContent = (content: string) => {
+    if (isVideo(content)) {
+      return (
+        <video
+          src={content}
+          controls
+          className="w-full h-full object-cover"
+        />
+      );
+    } 
+    
+    if (isAudio(content)) {
+      return (
+        <audio
+          src={content}
+          controls
+          className="w-full h-full object-cover"
+        />
+      );
+    }
+
+    return (
+      <img
+        src={content}
+        alt="Media"
+        className="w-full h-full object-cover cursor-pointer"
+        onClick={() => openModal(content)} // Mở modal khi nhấp
+      />
+    );
+    
+  }
+
   return (
     <>
       <ExtendWrapper>
@@ -256,7 +304,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
                     imgUrl={
                       conversationInfo.conversationImgUrl || "/avatar.jpg"
                     }
-                    onClick={handleAvatarClick}
+                    onClick={handleAvatarClick} // Mở modal khi nhấp vào ảnh
                   />
                   {/* Hiển thị tên nhóm và nút chỉnh sửa */}
 
@@ -295,6 +343,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
                     imgUrl={
                       conversationInfo.conversationImgUrl || "/avatar.jpg"
                     }
+                    onClick={openFindUserModal} // Mở modal khi nhấp vào ảnh
                   />
                   <span className="font-bold text-sm">
                     {conversationInfo.conversationName}
@@ -371,20 +420,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
                           key={index}
                           className="size-24 overflow-hidden rounded-lg"
                         >
-                          {isVideo(msg.content) ? (
-                            <video
-                              src={msg.content}
-                              controls
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <img
-                              src={msg.content}
-                              alt={`Media ${index}`}
-                              className="w-full h-full object-cover cursor-pointer"
-                              onClick={() => openModal(msg.content)} // Mở modal khi nhấp
-                            />
-                          )}
+                          {showMediaContent(msg.content)}
                         </div>
                       ))
                   ) : (

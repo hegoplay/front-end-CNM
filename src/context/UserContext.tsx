@@ -2,12 +2,14 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { UserContextType, UserInfo, UserResponseDto, UserUpdateRequest } from '../types/user';
+import { useRouter } from 'next/navigation';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userInfo, setUserInfo] = useState<UserResponseDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Khôi phục userInfo từ localStorage khi khởi động
   useEffect(() => {
@@ -84,6 +86,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Hàm đăng xuất
   const logout = useCallback(() => {
     setUserInfoAndStore(null);
+    router.push('/login');
   }, []);
 
   const value: UserContextType = {

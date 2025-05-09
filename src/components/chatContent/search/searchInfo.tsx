@@ -13,6 +13,7 @@ import { MdOutlineGroupAdd } from "react-icons/md";
 import { useRouter } from "next/navigation";
 import { UserResponseDto } from "@/types/user";
 import { useUser } from "@/context/UserContext";
+import { useFindUser } from "@/context/FindUserModelContext";
 
 interface ModalItem {
   title?: string;
@@ -35,12 +36,13 @@ interface ModalCreateGroupItem {
 }
 
 const SearchInfo = () => {
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
+  const { modelOpen, setModelOpen, userPhoneRef } = useFindUser();
   const [index, setIndex] = useState(0);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
   const [indexGr, setIndexGr] = useState(0);
   const [userData, setUserData] = useState<any>(null);
-  const phoneRef = useRef<HTMLInputElement>(null);
+  // const phoneRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [friends, setFriends] = useState<UserResponseDto[]>([]);
   // const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -78,7 +80,7 @@ const SearchInfo = () => {
     };
 
     fetchFriends();
-  }, []);
+  }, [openCreateGroup]);
 
   const valuesCreateGroup: ModalCreateGroupItem[] = [
     {
@@ -144,7 +146,7 @@ const SearchInfo = () => {
               }}
             />
           </div>
-          <div>
+          {/* <div>
             <Input
               type="text"
               placeholder="Nhập tên, số điện thoại, hoặc danh sách số điện thoại"
@@ -155,7 +157,7 @@ const SearchInfo = () => {
                 border: "1px solid #ddd",
               }}
             />
-          </div>
+          </div> */}
           <div style={{ marginTop: "20px" }}>
             <h4 style={{ marginBottom: "10px" }}>Danh sách bạn bè</h4>
 
@@ -237,11 +239,11 @@ const SearchInfo = () => {
   const values: ModalItem[] = [
     {
       title: "Thêm bạn",
-      content: <SearchBox phoneRef={phoneRef} />,
+      content: <SearchBox phoneRef={userPhoneRef} />,
       submitTitle: "Tìm kiếm",
       cancelTitle: "Hủy",
       onOkFn: async () => {
-        const phoneInput = phoneRef.current;
+        const phoneInput = userPhoneRef.current;
         if (!phoneInput) return;
 
         const phone = phoneInput.value.trim();
@@ -285,15 +287,15 @@ const SearchInfo = () => {
         }
       },
       onCancelFn: () => {
-        if (phoneRef.current) {
-          phoneRef.current.value = "";
+        if (userPhoneRef.current) {
+          userPhoneRef.current.value = "";
         }
         hideModal();
         setIndex(0);
       },
       onCloseFn: () => {
-        if (phoneRef.current) {
-          phoneRef.current.value = "";
+        if (userPhoneRef.current) {
+          userPhoneRef.current.value = "";
         }
         hideModal();
         setIndex(0);
@@ -305,15 +307,15 @@ const SearchInfo = () => {
       submitTitle: "Tìm kiếm",
       cancelTitle: "Trờ về",
       onCloseFn: () => {
-        if (phoneRef.current) {
-          phoneRef.current.value = "";
+        if (userPhoneRef.current) {
+          userPhoneRef.current.value = "";
         }
         setIndex(0);
         hideModal();
       },
       onCancelFn() {
-        if (phoneRef.current) {
-          phoneRef.current.value = "";
+        if (userPhoneRef.current) {
+          userPhoneRef.current.value = "";
         }
         setIndex(0);
       },
@@ -321,14 +323,14 @@ const SearchInfo = () => {
   ];
 
   const showModal = () => {
-    setOpen(true);
+    setModelOpen(true);
   };
 
   const hideModal = () => {
-    if (phoneRef.current) {
-      phoneRef.current.value = "";
+    if (userPhoneRef.current) {
+      userPhoneRef.current.value = "";
     }
-    setOpen(false);
+    setModelOpen(false);
   };
 
   const showCreateGroupModal = () => {
@@ -386,7 +388,7 @@ const SearchInfo = () => {
       </div>
       {/* Modal */}
       <Modal
-        open={open}
+        open={modelOpen}
         onClose={values[index].onCloseFn}
         onCancel={values[index].onCancelFn}
         onOk={values[index].onOkFn}

@@ -8,6 +8,7 @@ import { FaReply, FaSmile } from "react-icons/fa";
 import axios from "axios";
 import confirm from "antd/es/modal/confirm";
 import { ExclamationCircleFilled } from "@ant-design/icons";
+import ReactionMessageComponent from "./ReactionMessageComponent";
 
 interface MyMessageContentProps {
   children: React.ReactNode;
@@ -55,11 +56,6 @@ const MyMessageContent: React.FC<MyMessageContentProps> = ({
     </div>
   );
   
-  // Đếm số lượng mỗi emoji
-  const reactionCounts = message.reactions?.reduce((acc, reaction) => {
-    acc[reaction.emoji] = reaction.users.length; // Đếm số users trong reaction.users
-    return acc;
-  }, {} as Record<string, number>);
   
   // console.log(reactionCounts)
   return (
@@ -121,14 +117,9 @@ const MyMessageContent: React.FC<MyMessageContentProps> = ({
           </div>
         )}
         {/* Hiển thị phản ứng và số lượng */}
+
         {message.reactions && message.reactions.length > 0 && (
-          <div className="flex gap-2 mt-1">
-            {Object.entries(reactionCounts || {}).map(([emoji, count]) => (
-              <span key={emoji} className="text-sm flex items-center">
-                {emoji} {count > 1 ? count : ""}
-              </span>
-            ))}
-          </div>
+          <ReactionMessageComponent reactions={message.reactions} messageId={message.id}/>
         )}
         <span className="text-xs text-gray-500">{message.createdAt}</span>
       </div>

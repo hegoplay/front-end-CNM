@@ -126,7 +126,7 @@ const useSocket = (
                   ...conv,
                   lastMessage: message,
                   unreadCount:
-                    (prev.unreadCounts[message.conversationId] || 0) + 1,
+                  (prev.unreadCounts[message.conversationId] || 0) + 1,
                   updatedAt: message.createdAt,
                 };
               }
@@ -134,6 +134,16 @@ const useSocket = (
             }),
           };
         }
+        let updateConversation = prev.conversations.find(
+          (conv) => conv.id === message.conversationId
+        );
+
+        if (!updateConversation) {
+          // Nếu không tìm thấy conversation, trả về state hiện tại hoặc xử lý phù hợp
+          console.warn("Conversation not found:", message.conversationId);
+          return prev;
+        }
+
         return {
           ...prev,
           currentConversation: {
@@ -151,9 +161,7 @@ const useSocket = (
           },
           conversations: [
             {
-              ...prev.conversations.find(
-                (conv) => conv.id === message.conversationId
-              ),
+              ...updateConversation,
               
               lastMessage: message,
               updatedAt: message.createdAt,
@@ -304,7 +312,7 @@ const useSocket = (
         conversations: prev.conversations.filter(
           (conv) => conv.id !== conversationId
         ),
-        currentConversation: undefined,
+        currentConversation: undefined
       }));
     };
     // Xử lý call_invitation

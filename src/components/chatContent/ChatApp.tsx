@@ -17,6 +17,7 @@ import { ReactQueryProvider } from "@/providers/ReactQueryProvider";
 import { useRouter } from "next/navigation";
 import CallInvitation from "@/types/callInvitation";
 import { useUser } from "@/context/UserContext";
+import { FindUserProvider } from "@/context/FindUserModelContext";
 // import { randomUUID } from "crypto";
 
 const ChatApp: React.FC<{ token: string }> = ({ token }) => {
@@ -66,77 +67,54 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
 
 
   console.log("Unread counts: ", unreadCounts);
-  // console.log("Conversations: ", conversations);
-  // Handle the case when token is not available
-
-  // useLayoutEffect(() => {
-  //   const cleanupMediaStreams = async () => {
-  //     try {
-  //       // Lấy tất cả các stream hiện tại
-  //       const stream = await navigator.mediaDevices.getUserMedia({
-  //         audio: true,
-  //         video: true,
-  //       });
-  //       // Dừng tất cả các track
-  //       stream.getTracks().forEach((track) => {
-  //         track.stop();
-  //         console.log(`Stopped media track: ${track.kind}`);
-  //       });
-  //     } catch (error) {
-  //       console.log("No active media streams or permission denied:", error);
-  //       // Không cần xử lý lỗi thêm vì đây chỉ là bước dọn dẹp dự phòng
-  //     }
-  //   };
-
-  //   cleanupMediaStreams();
-  // }, []);
-
   return (
-    <ReactQueryProvider>
-      <Navbar />
-      <div className="chat-app">
-        <div className="main-content">
-          <div className="flex-1 flex-col h-full w-150 border-gray-300 border-1 overflow-auto">
-            <SearchInfo />
-            <div className="flex flex-col gap-2 border-t-1 overflow-y-auto scroll-smooth">
-              {/* danh sách các cuộc hội thoại */}
-              {conversations.map((conversation) => {
-                const unreadInfo = getConversationsWithUnreadCounts().find(
-                  (c) => c.conversationId === conversation.id
-                );
-                return (
-                  <ConversationBox
-                    {...conversation}
-                    key={conversation.id}
-                    unreadCount={unreadCounts[conversation.id] || 0}
+    <FindUserProvider>
+      <ReactQueryProvider>
+        <Navbar />
+        <div className="chat-app">
+          <div className="main-content">
+            <div className="flex-1 flex-col h-full w-150 border-gray-300 border-1 overflow-auto">
+              <SearchInfo />
+              <div className="flex flex-col gap-2 border-t-1 overflow-y-auto scroll-smooth">
+                {/* danh sách các cuộc hội thoại */}
+                {conversations.map((conversation) => {
+                  const unreadInfo = getConversationsWithUnreadCounts().find(
+                    (c) => c.conversationId === conversation.id
+                  );
+                  return (
+                    <ConversationBox
+                      {...conversation}
+                      key={conversation.id}
+                      unreadCount={unreadCounts[conversation.id] || 0}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex-3 h-full">
+              {currentConversation ? (
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center h-full w-full">
+                      <Spin tip="Loading" size="large" />
+                    </div>
+                  }
+                >
+                  <ConversationDetailPage
+                    conversation={currentConversation}
+                    pressCall={pressCall}
                   />
-                );
-              })}
+                </Suspense>
+              ) : (
+                <div className="flex flex-col h-full w-full justify-center align-center">
+                  <span className="text-black text-center">Chọn đoạn hội thoại để nhắn tin</span>
+                </div>
+              )}
             </div>
           </div>
-          <div className="flex-3 h-full">
-            {currentConversation ? (
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center h-full w-full">
-                    <Spin tip="Loading" size="large" />
-                  </div>
-                }
-              >
-                <ConversationDetailPage
-                  conversation={currentConversation}
-                  pressCall={pressCall}
-                />
-              </Suspense>
-            ) : (
-              <div className="flex flex-col h-full w-full justify-center align-center">
-                <span className="text-black text-center">PRO VJP</span>
-              </div>
-            )}
-          </div>
         </div>
-      </div>
-    </ReactQueryProvider>
+      </ReactQueryProvider>
+    </FindUserProvider>
   );
 };
 

@@ -15,6 +15,7 @@ import "@ant-design/v5-patch-for-react-19";
 import { useState } from "react";
 import { registerAction } from "@/app/register/actions";
 import { useRouter } from 'next/navigation';
+import dayjs from "dayjs";
 
 // B5: Nhập tên
 // B6: Nhập thông tin cá nhân (ngày tháng + giới tính)
@@ -87,6 +88,7 @@ const PostRegister: React.FC<{
           onChange={onChange}
           className="w-full"
           name="dateOfBirth"
+          maxDate={dayjs()}
         />
       </Form.Item>
       <Form.Item
@@ -103,7 +105,8 @@ const PostRegister: React.FC<{
         label="Ảnh đại diện"
         rules={[{ required: true, message: "Please input your username!" }]}
       >
-        <input type="file" name="avatar" />
+        {/* filter input  */}
+        <input type="file" name="avatar" accept="image/*" />
       </Form.Item>
       <Button
         type="primary"

@@ -7,7 +7,7 @@ import { Spin, message, Button } from "antd";
 import { useOtherUserInfo } from "@/hooks/useOtherUserInfo";
 import MessageList from "./messageType/MessageList";
 import axios from "axios";
-import RightMorePrivateConversation from "./rightmore/RightMoreConversation";
+import RightMoreConversation from "./rightmore/RightMoreConversation";
 import CallInvitation from "@/types/callInvitation";
 
 interface Props {
@@ -94,7 +94,7 @@ const ConversationDetailPage: React.FC<Props> = ({
 
       if (file) {
         const isMedia =
-          file.type.startsWith("image/") || file.type.startsWith("video/");
+          file.type.startsWith("image/") || file.type.startsWith("video/") || file.type.startsWith("audio/");
         const messageType = isMedia ? "MEDIA" : "FILE";
         const formData = new FormData();
         formData.append("file", file);
@@ -293,7 +293,7 @@ const ConversationDetailPage: React.FC<Props> = ({
         </div>
       </div>
       {/* Hiển thị thông tin người dùng khác */}
-      {openMore && <RightMorePrivateConversation conversationInfo={props.conversation} />}
+      {openMore && <RightMoreConversation conversationInfo={props.conversation} />}
     </div>
   );
 };

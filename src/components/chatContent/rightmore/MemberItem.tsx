@@ -39,7 +39,7 @@ const MemberItem: React.FC<Props> = ({ ...props }) => {
       return;
     }
     // xử lý người dùng muốn xóa thành viên
-    if (props.role === "admin") {
+    if (props.role === "admin" || props.role === "leader") {
       const isConfirmed = window.confirm(
         "Bạn có muốn xóa thành viên này không?"
       );

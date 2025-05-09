@@ -3,8 +3,9 @@ import { MessageResponse } from "@/types/chat";
 import { UserResponseDto } from "@/types/user";
 import { FaReply, FaSmile } from "react-icons/fa";
 import { Button, Popover } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import ReactionMessageComponent from "./ReactionMessageComponent";
 
 interface OtherMessageContentProps {
   children: React.ReactNode;
@@ -51,13 +52,6 @@ const OtherMessageContent: React.FC<OtherMessageContentProps> = ({
       ))}
     </div>
   );
-
-  // Đếm số lượng mỗi emoji
-  const reactionCounts = message.reactions?.reduce((acc, reaction) => {
-    acc[reaction.emoji] = (acc[reaction.emoji] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
   return (
     <div className="flex items-start gap-2">
       <AvatarImg imgUrl={userInfo?.baseImg || "/avatar.jpg"} />
@@ -95,13 +89,7 @@ const OtherMessageContent: React.FC<OtherMessageContentProps> = ({
         )}
         {/* Hiển thị phản ứng và số lượng */}
         {message.reactions && message.reactions.length > 0 && (
-          <div className="flex gap-2 mt-1">
-            {Object.entries(reactionCounts || {}).map(([emoji, count]) => (
-              <span key={emoji} className="text-sm flex items-center">
-                {emoji} {count > 1 ? count : ""}
-              </span>
-            ))}
-          </div>
+          <ReactionMessageComponent reactions={message.reactions} messageId={message.id}/>
         )}
         <span className="text-xs text-gray-500">{message.createdAt}</span>
       </div>

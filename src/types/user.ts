@@ -69,3 +69,14 @@ export interface UserUpdateRequest {
   baseImg: File | null;
   backgroundImg: File | null;
 }
+
+export interface UserReactionInfo{
+  user: UserResponseDto;
+  count: number;
+}
+
+export interface MessageReactionDto{
+  messageId: string;
+  reactions: Record<string, UserReactionInfo[]>;
+  reactionCounts: Record<string, number>;
+}
