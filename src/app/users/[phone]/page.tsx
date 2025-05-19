@@ -16,9 +16,7 @@ import UserProfile from '@/components/profile/UserProfile';
 import BackButton from '@/components/profile/BackButton';
 
 interface Props{
-  params: {
-    phone: string;
-  }
+  params: Promise<{ phone: string }>;
 }
 
 const UserInfoPage : React.FC<Props> = async ({params}) => {

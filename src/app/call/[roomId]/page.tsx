@@ -1,23 +1,21 @@
 "use server";
 import CallApp from "@/components/callContent/CallApp";
 import { cookies } from "next/headers";
-import React from "react";
+import React, { use } from "react";
 
 interface CallPageProps {
-  params: {
-    roomId: string;
-    userPhone: string;
-  },
-
+  params: Promise<{ roomId: string }>;
+  searchParams?: Promise<{ userPhone: string }>;
 }
 
-const CallPage : React.FC<CallPageProps> = async (context) => {
+const CallPage: React.FC<CallPageProps> = async (context) => {
   const token = (await cookies()).get("authToken")?.value || "";
-  const temps = await context.params;
+  const preUserPhone = await context.searchParams;
+  const preRoomId = await context.params;
   // isInitiaor lấy trong query params
   // const isInitiator = q?.isInitiator || false;
-  const roomId = decodeURIComponent(temps.roomId);
-  const userPhone = decodeURIComponent(temps.userPhone); 
+  const roomId = decodeURIComponent(preRoomId.roomId); // Lấy roomId từ params
+  const userPhone = decodeURIComponent(preUserPhone?.userPhone || ""); // Lấy userPhone từ query params
   // Kiểm tra token hợp lệ trước khi render ChatApp
   if (token == "") {
     return (
@@ -39,8 +37,7 @@ const CallPage : React.FC<CallPageProps> = async (context) => {
   }
   // console.log("Token:", token);
 
-
-  return <CallApp roomId={roomId} token={token} userPhone={userPhone}/>;
+  return <CallApp roomId={roomId} token={token} userPhone={userPhone} />;
 };
 
 export default CallPage;
