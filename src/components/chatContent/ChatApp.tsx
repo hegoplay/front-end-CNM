@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import CallInvitation from "@/types/callInvitation";
 import { useUser } from "@/context/UserContext";
 import { FindUserProvider } from "@/context/FindUserModelContext";
+import '@ant-design/v5-patch-for-react-19';
 // import { randomUUID } from "crypto";
 
 const ChatApp: React.FC<{ token: string }> = ({ token }) => {

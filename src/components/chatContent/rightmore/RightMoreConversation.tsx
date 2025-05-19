@@ -280,7 +280,7 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
         <>
           <SectionBox>
             <p
-              style={{ marginBottom: 0, fontWeight: 600, textAlign: "center" }}
+              style={{ marginBottom: 0, fontWeight: 600, textAlign: "center", color: "black" }}
               className="text-sm"
             >
               {conversationInfo.type === "PRIVATE"

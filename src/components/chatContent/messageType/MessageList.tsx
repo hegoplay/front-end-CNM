@@ -14,6 +14,7 @@ interface MessageListProps {
   currentUserPhone: string;
   otherInfo?: UserResponseDto;
   onReply?: (message: MessageResponse) => void;
+  focusedMessageId?: string | null;
 }
 
 const MessageList: React.FC<MessageListProps> = ({
@@ -21,10 +22,12 @@ const MessageList: React.FC<MessageListProps> = ({
   currentUserPhone,
   otherInfo,
   onReply,
+  focusedMessageId,
 }) => {
   const { userInfo } = useUser();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null); // Ref cho container
+  const focusedMessageRef = useRef<HTMLDivElement>(null); // Ref cho message đang focus
 
   // Hàm cuộn xuống dưới cùng
   const scrollToBottom = useCallback(() => {
@@ -33,25 +36,37 @@ const MessageList: React.FC<MessageListProps> = ({
     }
   }, []);
 
+  // Hàm cuộn đến message được focus
+  const scrollToFocusedMessage = useCallback(() => {
+    if (focusedMessageRef.current) {
+      focusedMessageRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, []);
+
   // Kiểm tra xem người dùng có đang ở gần dưới cùng không
   const isNearBottom = useCallback(() => {
-    console.log("Checking if near bottom"); 
     if (!containerRef.current) return true;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
     return scrollHeight - scrollTop - clientHeight < 100; // Gần dưới cùng trong 100px
   }, []);
 
-  // Cuộn xuống dưới cùng khi messages thay đổi, nếu người dùng ở gần dưới cùng
+  // Cuộn đến message đang được focus hoặc xuống dưới cùng khi component mount
   useLayoutEffect(() => {
-    scrollToBottom();
-  },[]);
-
-  useEffect(() => {
-    if (isNearBottom()) {
-      // console.log("Scrolling to bottom");
+    if (focusedMessageId && messages.some(msg => msg.id === focusedMessageId)) {
+      setTimeout(scrollToFocusedMessage, 100); // Thêm timeout để đảm bảo DOM đã render
+    } else {
       scrollToBottom();
     }
-  }, [messages, scrollToBottom, isNearBottom]);
+  }, []);
+
+  // Xử lý khi messages hoặc focusedMessageId thay đổi
+  useEffect(() => {
+    if (focusedMessageId && messages.some(msg => msg.id === focusedMessageId)) {
+      scrollToFocusedMessage();
+    } else if (isNearBottom()) {
+      scrollToBottom();
+    }
+  }, [messages, focusedMessageId, scrollToBottom, isNearBottom, scrollToFocusedMessage]);
 
   const messageType = useCallback((message: MessageResponse) => {
     if (message.isRecalled) {
@@ -142,11 +157,12 @@ const MessageList: React.FC<MessageListProps> = ({
           {messages.map((message) => (
             <div
               key={message.id}
+              ref={focusedMessageId === message.id ? focusedMessageRef : null}
               className={`flex ${
                 message.senderId === currentUserPhone
                   ? "justify-end"
                   : "justify-start"
-              } mb-2 gap-4`}
+              } mb-2 gap-4 ${focusedMessageId === message.id ? "bg-blue-100 rounded-lg p-1" : ""}`}
             >
               {messageWrapper(message)}
             </div>

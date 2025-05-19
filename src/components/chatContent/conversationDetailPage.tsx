@@ -9,6 +9,7 @@ import MessageList from "./messageType/MessageList";
 import axios from "axios";
 import RightMoreConversation from "./rightmore/RightMoreConversation";
 import CallInvitation from "@/types/callInvitation";
+import MessageSearch from "./search/MessageSearch";
 
 interface Props {
   pressCall: () => void;
@@ -26,7 +27,8 @@ const ConversationDetailPage: React.FC<Props> = ({
   const [replyingTo, setReplyingTo] = useState<MessageResponse | null>(null); // Trạng thái tin nhắn đang trả lời
   const [openMore, setOpenMore] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null);
 
   // Đánh dấu cuộc trò chuyện là đã đọc khi tải trang
   useLayoutEffect(() => {
@@ -171,7 +173,17 @@ const ConversationDetailPage: React.FC<Props> = ({
     if (!props.conversation.id) return;
 
     props.pressCall();
-    
+  };
+
+  // Xử lý tìm kiếm và focus tin nhắn
+  const handleScrollToMessage = (messageId: string) => {
+    setFocusedMessageId(messageId);
+  };
+
+  // Mở/đóng tìm kiếm
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+    setFocusedMessageId(null); // Reset focused message when toggling search
   };
 
   if (isLoading) return <Spin />;
@@ -186,6 +198,7 @@ const ConversationDetailPage: React.FC<Props> = ({
           openMore={openMore}
           setOpenMore={setOpenMore}
           handleCall={handleCall}
+          onSearchClick={toggleSearch}
         />
 
         {/* Khu vực tin nhắn */}
@@ -195,6 +208,7 @@ const ConversationDetailPage: React.FC<Props> = ({
             messages={props.conversation.messageDetails}
             otherInfo={otherInfo || undefined}
             onReply={handleReply} // Truyền hàm xử lý trả lời
+            focusedMessageId={focusedMessageId} // Truyền ID tin nhắn cần focus
           />
         </div>
 
@@ -266,6 +280,9 @@ const ConversationDetailPage: React.FC<Props> = ({
                 }}
                 ref={inputRef}
                 className="w-full border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 min-w-[50px] overflow-y-auto text-black"
+                style={{
+                  color: 'black'
+                }}
                 onKeyDown={handleKeyPress}
                 placeholder="Nhập tin nhắn..."
                 rows={1}
@@ -294,6 +311,17 @@ const ConversationDetailPage: React.FC<Props> = ({
       </div>
       {/* Hiển thị thông tin người dùng khác */}
       {openMore && <RightMoreConversation conversationInfo={props.conversation} />}
+      
+      {/* Hiển thị tìm kiếm tin nhắn */}
+      {isSearchOpen && (
+        <MessageSearch
+          messages={props.conversation.messageDetails}
+          onClose={toggleSearch}
+          userInfo={userInfo}
+          otherUserInfo={otherInfo || undefined}
+          onScrollToMessage={handleScrollToMessage}
+        />
+      )}
     </div>
   );
 };

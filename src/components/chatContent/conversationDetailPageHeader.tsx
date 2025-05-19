@@ -12,6 +12,7 @@ interface Props {
   openMore?: boolean;
   setOpenMore?: React.Dispatch<React.SetStateAction<boolean>>;
   handleCall?: () => void;
+  onSearchClick?: () => void;
 }
 
 const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
@@ -19,6 +20,7 @@ const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
   setOpenMore,
   handleCall,
   conversation,
+  onSearchClick = () => {},
 }) => {
   const { userInfo } = useUser();
   const [showUpdate, setShowUpdate] = React.useState(false);
@@ -83,6 +85,7 @@ const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
           }}
           type={conversation.type}
           isAdmin = {conversation.admins?.some((admin) => admin === userInfo?.phoneNumber) || false}
+          onSearchClick={onSearchClick}
         />
       }
       <Modal
