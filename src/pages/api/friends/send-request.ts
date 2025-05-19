@@ -20,7 +20,7 @@ export default async function handler(
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL; // Sửa lại env variable
     const response = await fetch(`${apiUrl}/friends/send-request?receiverPhoneNumber=${receiverPhone}`, {
       method: "POST",
-      headers: {
+      headers: {  
         "Content-Type": "application/json",
         // Thêm headers khác nếu cần (Authorization, etc.)
         "Authorization": `Bearer ${req.cookies.authToken}`,

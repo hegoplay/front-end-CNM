@@ -1,5 +1,5 @@
 import AvatarImg from "@/components/AvatarImg";
-import { MessageResponse } from "@/types/chat";
+import { MemberDto, MessageResponse } from "@/types/chat";
 import { UserResponseDto } from "@/types/user";
 import { FaReply, FaSmile } from "react-icons/fa";
 import { Button, Popover } from "antd";
@@ -10,7 +10,7 @@ import ReactionMessageComponent from "./ReactionMessageComponent";
 interface OtherMessageContentProps {
   children: React.ReactNode;
   message: MessageResponse;
-  userInfo?: UserResponseDto;
+  userInfo?: MemberDto;
   onReply?: (message: MessageResponse) => void;
 }
 

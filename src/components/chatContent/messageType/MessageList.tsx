@@ -1,5 +1,15 @@
-import { MessageResponse } from "@/types/chat";
-import React, { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import {
+  ConversationDetailDto,
+  MemberDto,
+  MessageResponse,
+} from "@/types/chat";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from "react";
 import MyMessageContent from "./MyMessageContent";
 import OtherMessageContent from "./OtherMessageContent";
 import TextChat from "./TextChat";
@@ -10,7 +20,7 @@ import FileChat from "./FileChat";
 import CallChat from "./CallChat";
 
 interface MessageListProps {
-  messages: MessageResponse[];
+  conversation: ConversationDetailDto;
   currentUserPhone: string;
   otherInfo?: UserResponseDto;
   onReply?: (message: MessageResponse) => void;
@@ -18,12 +28,26 @@ interface MessageListProps {
 }
 
 const MessageList: React.FC<MessageListProps> = ({
-  messages,
+  conversation,
   currentUserPhone,
   otherInfo,
   onReply,
   focusedMessageId,
 }) => {
+  // tạo trước 1 cái map memberInfos
+  const memberInfos = useMemo(() => {
+    const map = new Map<string, MemberDto | undefined>();
+    conversation.participants.forEach((phoneNumber) => {
+      map.set(
+        phoneNumber,
+        conversation.participantsDetails.find(
+          (user) => user.phoneNumber === phoneNumber
+        )
+      );
+    });
+    return map;
+  }, [conversation.participants, conversation.participantsDetails]);
+
   const { userInfo } = useUser();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null); // Ref cho container
@@ -39,7 +63,10 @@ const MessageList: React.FC<MessageListProps> = ({
   // Hàm cuộn đến message được focus
   const scrollToFocusedMessage = useCallback(() => {
     if (focusedMessageRef.current) {
-      focusedMessageRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      focusedMessageRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     }
   }, []);
 
@@ -52,7 +79,10 @@ const MessageList: React.FC<MessageListProps> = ({
 
   // Cuộn đến message đang được focus hoặc xuống dưới cùng khi component mount
   useLayoutEffect(() => {
-    if (focusedMessageId && messages.some(msg => msg.id === focusedMessageId)) {
+    if (
+      focusedMessageId &&
+      conversation.messageDetails.some((msg) => msg.id === focusedMessageId)
+    ) {
       setTimeout(scrollToFocusedMessage, 100); // Thêm timeout để đảm bảo DOM đã render
     } else {
       scrollToBottom();
@@ -61,12 +91,21 @@ const MessageList: React.FC<MessageListProps> = ({
 
   // Xử lý khi messages hoặc focusedMessageId thay đổi
   useEffect(() => {
-    if (focusedMessageId && messages.some(msg => msg.id === focusedMessageId)) {
+    if (
+      focusedMessageId &&
+      conversation.messageDetails.some((msg) => msg.id === focusedMessageId)
+    ) {
       scrollToFocusedMessage();
     } else if (isNearBottom()) {
       scrollToBottom();
     }
-  }, [messages, focusedMessageId, scrollToBottom, isNearBottom, scrollToFocusedMessage]);
+  }, [
+    conversation.messageDetails,
+    focusedMessageId,
+    scrollToBottom,
+    isNearBottom,
+    scrollToFocusedMessage,
+  ]);
 
   const messageType = useCallback((message: MessageResponse) => {
     if (message.isRecalled) {
@@ -90,7 +129,7 @@ const MessageList: React.FC<MessageListProps> = ({
     (message: MessageResponse) => {
       // Tìm tin nhắn gốc nếu có replyTo
       const repliedMessage = message.replyTo
-        ? messages.find((msg) => msg.id === message.replyTo)
+        ? conversation.messageDetails.find((msg) => msg.id === message.replyTo)
         : undefined;
 
       const content = (
@@ -136,7 +175,7 @@ const MessageList: React.FC<MessageListProps> = ({
           <OtherMessageContent
             key={message.id}
             message={message}
-            userInfo={otherInfo || undefined}
+            userInfo={memberInfos.get(message.senderId) || undefined}
             onReply={onReply}
           >
             {content}
@@ -144,17 +183,21 @@ const MessageList: React.FC<MessageListProps> = ({
         );
       }
     },
-    [currentUserPhone, userInfo, otherInfo, messageType, messages, onReply]
+    [
+      currentUserPhone,
+      userInfo,
+      otherInfo,
+      messageType,
+      conversation.messageDetails,
+      onReply,
+    ]
   );
 
   return (
-    <div
-      ref={containerRef}
-      className="flex flex-col w-full h-full p-4"
-    >
-      {messages.length > 0 ? (
+    <div ref={containerRef} className="flex flex-col w-full h-full p-4">
+      {conversation.messageDetails.length > 0 ? (
         <>
-          {messages.map((message) => (
+          {conversation.messageDetails.map((message) => (
             <div
               key={message.id}
               ref={focusedMessageId === message.id ? focusedMessageRef : null}
@@ -162,7 +205,11 @@ const MessageList: React.FC<MessageListProps> = ({
                 message.senderId === currentUserPhone
                   ? "justify-end"
                   : "justify-start"
-              } mb-2 gap-4 ${focusedMessageId === message.id ? "bg-blue-100 rounded-lg p-1" : ""}`}
+              } mb-2 gap-4 ${
+                focusedMessageId === message.id
+                  ? "bg-blue-100 rounded-lg p-1"
+                  : ""
+              }`}
             >
               {messageWrapper(message)}
             </div>

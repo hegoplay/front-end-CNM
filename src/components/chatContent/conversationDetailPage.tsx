@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useMemo, useState, useRef } from "react";
 import { FiPaperclip, FiSend, FiX } from "react-icons/fi";
 import { ConversationDetailDto, MessageResponse } from "@/types/chat";
 import { useUser } from "@/context/UserContext";
-import ConversationDetailPrivatePageHeader from "./conversationDetailPageHeader";
+import ConversationPageHeader from "./conversationDetailPageHeader";
 import { Spin, message, Button } from "antd";
 import { useOtherUserInfo } from "@/hooks/useOtherUserInfo";
 import MessageList from "./messageType/MessageList";
@@ -193,7 +193,7 @@ const ConversationDetailPage: React.FC<Props> = ({
     <div className="flex h-full">
       <div className="flex flex-1 flex-col h-full">
         {/* Header */}
-        <ConversationDetailPrivatePageHeader
+        <ConversationPageHeader
           conversation={props.conversation}
           openMore={openMore}
           setOpenMore={setOpenMore}
@@ -204,8 +204,8 @@ const ConversationDetailPage: React.FC<Props> = ({
         {/* Khu vực tin nhắn */}
         <div className="flex flex-col flex-1 bg-gray-100 overflow-scroll">
           <MessageList
+            conversation = {props.conversation}
             currentUserPhone={userInfo.phoneNumber}
-            messages={props.conversation.messageDetails}
             otherInfo={otherInfo || undefined}
             onReply={handleReply} // Truyền hàm xử lý trả lời
             focusedMessageId={focusedMessageId} // Truyền ID tin nhắn cần focus

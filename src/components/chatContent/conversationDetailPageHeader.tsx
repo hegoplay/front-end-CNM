@@ -15,7 +15,7 @@ interface Props {
   onSearchClick?: () => void;
 }
 
-const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
+const ConversationPageHeader: React.FC<Props> = ({
   openMore,
   setOpenMore,
   handleCall,
@@ -144,4 +144,4 @@ const ConversationDetailPrivatePageHeader: React.FC<Props> = ({
   );
 };
 
-export default ConversationDetailPrivatePageHeader;
+export default ConversationPageHeader;
