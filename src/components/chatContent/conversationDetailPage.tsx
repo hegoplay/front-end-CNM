@@ -100,7 +100,9 @@ const ConversationDetailPage: React.FC<Props> = ({
         const messageType = isMedia ? "MEDIA" : "FILE";
         const formData = new FormData();
         formData.append("file", file);
-
+        formData.append("senderId", userInfo?.phoneNumber || "");
+        formData.append("conversationId", props.conversation.id || "");
+        formData.append("type", messageType);
         const requestData = {
           senderId: userInfo?.phoneNumber,
           conversationId: props.conversation.id,
@@ -121,7 +123,12 @@ const ConversationDetailPage: React.FC<Props> = ({
           request: requestData,
         });
 
-        formData.append("request", JSON.stringify(requestData));
+        if (requestData.replyTo) {
+          formData.append("replyTo", requestData.replyTo);
+        }
+        // Log FormData for debugging
+
+        console.log("FormData:", formData);
 
         const response = await axios.post("/api/messages/file", formData, {
           headers: {

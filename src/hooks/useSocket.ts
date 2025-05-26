@@ -11,6 +11,7 @@ import {
   MessageType,
   Reaction,
   mapConversationDetailDtoToConversationDto,
+  MemberDto,
 } from "../types/chat";
 import CallInvitation from "@/types/callInvitation";
 // const { localStream, remoteStream, isConnected, error, callStatus } = useCall(
@@ -74,8 +75,11 @@ const useSocket = (
       reconnectionDelay: 1000,
       autoConnect: true,
       query: { token },
-      transports: ["websocket"],
+      transports: ["polling"],
       auth: { token },
+      secure: true,
+      rejectUnauthorized: false,
+
     });
 
     const socketInstance = newManager.socket("/chat");
@@ -317,16 +321,18 @@ const useSocket = (
     };
     // Xử lý call_invitation
 
+
+
     const onClearConversation = (conversationId: string) => {
       setState((prev) => ({
         ...prev,
-        currentConversation: prev.currentConversation?.id
+        currentConversation: prev.currentConversation?.id === conversationId
           ? {
               ...prev.currentConversation,
               messageDetails: []
               ,
             }
-          : undefined,
+          : prev.currentConversation,
       }))
     };
 

@@ -19,8 +19,6 @@ export default async function Page() {
   // console.log("Token:", token);
 
   return (
-    // <ReactQueryProvider>
       <ChatApp token={token} />
-    // </ReactQueryProvider>
   );
 }

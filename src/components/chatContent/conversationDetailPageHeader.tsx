@@ -76,6 +76,7 @@ const ConversationPageHeader: React.FC<Props> = ({
         <ActionButtons
           onMoreClick={() => {
             if (setOpenMore) {
+              
               setOpenMore((prev) => !prev);
             }
           }}
@@ -105,11 +106,11 @@ const ConversationPageHeader: React.FC<Props> = ({
               }),
             }
           );
-          const data = await response.json();
-          console.log("Add members response: ", data);
+          // const data = await response.json();
+          // console.log("Add members response: ", data);
           setShowUpdate(false);
           setSelectedMembers([]);
-          if (data.statusCode === 200) {
+          if (response.ok) {
             message.success("Thêm thành viên thành công");
           }
           else {

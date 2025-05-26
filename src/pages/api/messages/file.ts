@@ -49,38 +49,26 @@ export default async function handler(
     const fileBuffer = await fs.readFile(file.filepath);
 
     // Parse phần request từ fields.request
-    const requestRaw = fields.request?.[0];
-    if (!requestRaw) {
-      await fs.unlink(file.filepath);
-      return res.status(400).json({ message: 'Thiếu phần request' });
-    }
-
-    let requestData;
-    try {
-      requestData = JSON.parse(requestRaw);
-      console.log("Parsed requestData:", requestData);
-    } catch (error) {
-      await fs.unlink(file.filepath);
-      return res.status(400).json({ message: 'Request không phải JSON hợp lệ' });
-    }
-
-    // Kiểm tra dữ liệu request
-    if (!requestData.senderId || !requestData.conversationId || !requestData.type) {
-      await fs.unlink(file.filepath);
-      return res.status(400).json({
-        message: 'Thiếu thông tin trong request',
-        missingFields: {
-          senderId: !!requestData.senderId,
-          conversationId: !!requestData.conversationId,
-          type: !!requestData.type,
-        },
-      });
-    }
+    
 
     // Chuẩn bị FormData
     const formData = new FormData();
     formData.append('file', new Blob([fileBuffer], { type: file.mimetype || 'application/octet-stream' }), file.originalFilename || 'file');
-    formData.append('request', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
+    
+    // Thêm các trường khác từ form-body
+    if (fields) {
+      Object.entries(fields).forEach(([key, value]) => {
+        if (key !== 'file') { // Tránh trùng lặp với file đã thêm
+          if (Array.isArray(value)) {
+            // Nếu là mảng, thêm từng giá trị
+            value.forEach(item => {
+              formData.append(key, item.toString());
+            });
+          }
+        }
+      });
+    }
+
     // Gửi request đến backend Java
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_API_BASE_URL}/messages/file`,
