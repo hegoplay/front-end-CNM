@@ -23,7 +23,7 @@ const OtherMessageContent: React.FC<OtherMessageContentProps> = ({
   const [isReactionPopoverOpen, setIsReactionPopoverOpen] = useState(false);
 
   // Danh sách emoji để chọn
-  const emojis = ["👍", "❤️", "😂", "😢", "😮", "🙌"];
+  const emojis = ["👍", "❤️", "😂", "😢", "😡", "😮"];
 
   // Xử lý chọn emoji
   const handleReact = async (emoji: string) => {
@@ -88,7 +88,7 @@ const OtherMessageContent: React.FC<OtherMessageContentProps> = ({
           </div>
         )}
         {/* Hiển thị phản ứng và số lượng */}
-        {message.reactions && message.reactions.length > 0 && (
+        {message.reactions && message.reactions.length > 0   && !message.isRecalled  && (
           <ReactionMessageComponent reactions={message.reactions} messageId={message.id}/>
         )}
         <span className="text-xs text-gray-500">{message.createdAt}</span>

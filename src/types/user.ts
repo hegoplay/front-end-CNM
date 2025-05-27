@@ -34,7 +34,7 @@ export interface User {
 export interface UserResponseDto {
   phoneNumber: string;
   name: string;
-  isMale: boolean;
+  male: boolean;
   dateOfBirth: string;
   bio: string;
   baseImg: string;

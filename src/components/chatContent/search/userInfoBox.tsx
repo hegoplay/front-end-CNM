@@ -220,7 +220,7 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
         <div className="flex gap-2">
           <span className="text-sm text-gray-500">Giới tính</span>
           <p className="text-sm">
-            {props.isMale ? "Nam" : props.isMale === false ? "Nữ" : "Không xác định"}
+            {props.male ? "Nam" : props.male === false ? "Nữ" : "Nam"}
           </p>
         </div>
         <div className="flex gap-2">

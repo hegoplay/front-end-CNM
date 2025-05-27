@@ -124,7 +124,7 @@ const UserProfile : React.FC<Props> = ({params}) => {
                   backgroundColor: '#f9f9f9',
                 }}
               >
-                {userInfo?.isMale ? 'Nam' : userInfo?.isMale === false ? 'Nữ' : 'Chưa cập nhật'}
+                {userInfo?.male ? 'Nam' : userInfo?.male === false ? 'Nữ' : 'Chưa cập nhật'}
               </div>
             </div>
 

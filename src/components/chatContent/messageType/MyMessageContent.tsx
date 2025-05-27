@@ -118,7 +118,7 @@ const MyMessageContent: React.FC<MyMessageContentProps> = ({
         )}
         {/* Hiển thị phản ứng và số lượng */}
 
-        {message.reactions && message.reactions.length > 0 && (
+        {message.reactions && message.reactions.length > 0 && !message.isRecalled &&(
           <ReactionMessageComponent reactions={message.reactions} messageId={message.id}/>
         )}
         <span className="text-xs text-gray-500">{message.createdAt}</span>

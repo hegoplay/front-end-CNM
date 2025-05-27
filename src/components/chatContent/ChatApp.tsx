@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useCallback,
   useLayoutEffect,
+  use,
 } from "react";
 import { Flex, Spin } from "antd";
 import "./ChatApp.css";
@@ -68,6 +69,13 @@ const ChatApp: React.FC<{ token: string }> = ({ token }) => {
 
 
   console.log("Unread counts: ", unreadCounts);
+  if (userInfo === null) {
+    return 
+      <div className="flex items-center justify-center h-full w-full">
+        <Spin tip="Loading user info" size="large" />
+      </div>;
+  }
+  
   return (
     <FindUserProvider>
       <ReactQueryProvider>

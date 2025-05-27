@@ -343,7 +343,11 @@ const RightMoreConversation: React.FC<Props> = ({ conversationInfo }) => {
                     imgUrl={
                       conversationInfo.conversationImgUrl || "/avatar.jpg"
                     }
-                    onClick={openFindUserModal} // Mở modal khi nhấp vào ảnh
+                    onClick={() =>{
+                        if (conversationInfo.type === ConversationType.PRIVATE)
+                          openFindUserModal()
+                      }
+                    } // Mở modal khi nhấp vào ảnh
                   />
                   <span className="font-bold text-sm">
                     {conversationInfo.conversationName}

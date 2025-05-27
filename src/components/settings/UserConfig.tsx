@@ -15,7 +15,7 @@ const UserConfig: React.FC<UserResponseDto> = ({ ...props }) => {
   const [img, setImg] = useState(props.baseImg); // Ảnh gốc
   const [previewImg, setPreviewImg] = useState<string | null>(null); // Ảnh preview
   const fileInputRef = useRef<HTMLInputElement>(null); // Tham chiếu đến input file
-  const [selectedState, setSelectedState] = useState(props.isMale); // nam / nu
+  const [selectedState, setSelectedState] = useState(props.male); // nam / nu
   const { updateUserInfo } = useUser();
   const [selectedFile, setSelectedFile] = useState<File | null>(null); // Lưu file gốc
   const router = useRouter();
