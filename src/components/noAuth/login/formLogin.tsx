@@ -7,6 +7,7 @@ import { loginAction } from "@/app/login/actions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
+import '@ant-design/v5-patch-for-react-19';
 
 interface LoginState {
   error?: string;

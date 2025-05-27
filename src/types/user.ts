@@ -40,7 +40,7 @@ export interface UserResponseDto {
   baseImg: string;
   backgroundImg: string;
   status: string;
-  isOnline: boolean;
+  online: boolean;
   lastOnlineTime: string;
 }
 

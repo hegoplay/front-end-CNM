@@ -10,6 +10,7 @@ import axios from "axios";
 import RightMoreConversation from "./rightmore/RightMoreConversation";
 import CallInvitation from "@/types/callInvitation";
 import MessageSearch from "./search/MessageSearch";
+import { FiMic, FiStopCircle } from "react-icons/fi";
 
 interface Props {
   pressCall: () => void;
@@ -29,6 +30,44 @@ const ConversationDetailPage: React.FC<Props> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [focusedMessageId, setFocusedMessageId] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+
+  const handleStartRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+    let chunks: BlobPart[] = [];
+
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        chunks.push(e.data);
+      }
+    };
+
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      setAudioBlob(blob);
+      setFile(new File([blob], "recording.webm", { type: "audio/webm" }));
+      setIsRecording(false);
+      stream.getTracks().forEach((track) => track.stop());
+    };
+      recorder.start();
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+    }catch (err) {
+      message.error("Không thể truy cập micro");
+      setIsRecording(false);
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+    }
+  };
+
 
   // Đánh dấu cuộc trò chuyện là đã đọc khi tải trang
   useLayoutEffect(() => {
@@ -277,6 +316,25 @@ const ConversationDetailPage: React.FC<Props> = ({
               />
             </button>
 
+                    {/* Nút ghi âm */}
+          {!isRecording ? (
+            <button
+              className="p-2 rounded-full hover:bg-gray-200"
+              onClick={handleStartRecording}
+              disabled={isUploading}
+              title="Ghi âm"
+            >
+              <FiMic className="text-gray-600" />
+            </button>
+          ) : (
+            <button
+              className="p-2 rounded-full hover:bg-red-200"
+              onClick={handleStopRecording}
+              title="Dừng ghi"
+            >
+              <FiStopCircle className="text-red-600" />
+            </button>
+          )}
             {/* Input nhập tin nhắn */}
             <div className="flex-1 relative min-w-0">
               <textarea

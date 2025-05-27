@@ -273,6 +273,7 @@ const SearchInfo = () => {
 
           if (data.success) {
             setUserData(data.message);
+            console.log("User data:", data.message);
 
             setIndex(1);
           } else {

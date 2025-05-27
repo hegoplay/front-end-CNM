@@ -210,6 +210,10 @@ const UserInfoBox: React.FC<UserInfoProps> = ({ ...props }) => {
           )}
         </div>
         <div className="flex gap-2">
+          <span className="text-sm text-gray-500">Trạng thái</span>
+          <p className="text-sm">{props.online ? "Online" : "Offline"}</p>
+        </div>
+        <div className="flex gap-2">
           <span className="text-sm text-gray-500">Giới thiệu</span>
           <p className="text-sm">{props.bio || "Không có giới thiệu"}</p>
         </div>
